@@ -361,7 +361,7 @@ public:
 
 int main() {
     BufferManager* bufferManager = nullptr;
-
+    int numero = 4;
     int opcion = 0;
 
     while (opcion != 6) {
