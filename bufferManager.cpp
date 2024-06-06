@@ -370,8 +370,7 @@ int main() {
         std::cout << "2. Consultar página en BufferPool\n";
         std::cout << "3. Lectura/Escritura de una página en BufferPool\n";
         std::cout << "4. Mostrar contenido de un frame\n";
-        std::cout << "5. Mostrar tabla de páginas\n";
-        std::cout << "6. Salir\n";
+        std::cout << "5. Salir\n";
         std::cout << "Seleccione una opción: ";
         std::cin >> opcion;
 
@@ -407,6 +406,20 @@ int main() {
                 cout << "ingrese el numero de pagina que desea leer o modificar: ";
                 cin >> pagina;
                 bufferManager->LecturaEscritura(pagina);
+                break;
+            }
+
+            case 4: {
+                if (!bufferManager) {
+                    std::cout << "Primero debe crear el BufferPool." << std::endl;
+                } else {
+                    bufferManager->mostrarTablaDePaginas();
+                }
+                break;
+            }
+
+            case 5: {
+                cout << "saliedo del programa..." << endl;
                 break;
             }
         }
