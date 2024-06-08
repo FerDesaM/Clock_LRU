@@ -137,16 +137,18 @@ private:
         int DirtyBit;
         int PinCount;
         int LastUsed;
+        bool ReferenceBit;
 
-        PageEntry(int frameId, int pageId) : FrameId(frameId), PageId(pageId), DirtyBit(0), PinCount(0), LastUsed(0) {}
+        PageEntry(int frameId, int pageId) : FrameId(frameId), PageId(pageId), DirtyBit(0), PinCount(0), LastUsed(0),ReferenceBit(true) {}
+        
     };
 
     vector<PageEntry> entries;
-
+        int clockHand;
 public:
     // Constructor
-    PageTable() {}
-
+    PageTable(): clockHand(0) {}
+    
     // Destructor
     ~PageTable() {}
 
@@ -250,21 +252,40 @@ public:
         }
         return false;
     }
-
+    int obtenerFrameLRU() const {
+    int lruIndex = -1;
+    int lruValue = INT_MAX;
+    for (const auto& entry : entries) {
+        if (entry.PinCount == 0 && entry.LastUsed < lruValue) {
+            lruValue = entry.LastUsed;
+            lruIndex = entry.FrameId;
+        }
+    }
+    return lruIndex;
+}
+    int obtenerFrameClock() {
+    while (true) {
+        PageEntry& entry = entries[clockHand];
+        if (entry.ReferenceBit) {
+            entry.ReferenceBit = false;
+            clockHand = (clockHand + 1) % entries.size();
+        } else {
+            int frameId = entry.FrameId;
+            clockHand = (clockHand + 1) % entries.size();
+            return frameId;
+        }
+    }
+}
 
 };
 
 
 
 class BufferManager {
-private:
-    BufferPool bufferPool;
-    PageTable pageTable;
-    std::unordered_map<std::string, int> archivo_a_numero;
 
 public:
-    
-    BufferManager(size_t num_frames) : bufferPool(num_frames) {
+    enum class ReplacementPolicy { LRU, CLOCK };
+    BufferManager(size_t num_frames,ReplacementPolicy policy) : bufferPool(num_frames),policy(policy) {
         // Asignar números de página a archivos
         for (int i = 1; i <= 16; ++i) {
             std::string nombre_archivo = "bloque_" + std::to_string(i) + ".txt";
@@ -357,6 +378,20 @@ public:
     void mostrarTablaDePaginas() {
         pageTable.mostrarTabla();
     }
+    size_t reemplazarPagina() {
+    int frame_num = (policy == ReplacementPolicy::LRU) ? pageTable.obtenerFrameLRU() : pageTable.obtenerFrameClock();
+    if (frame_num == -1) {
+        std::cerr << "Error: no se encontró un frame para reemplazar." << std::endl;
+        std::exit(1);
+    }
+    return frame_num;
+}
+private:
+    ReplacementPolicy policy;
+    BufferPool bufferPool;
+    PageTable pageTable;
+    std::unordered_map<std::string, int> archivo_a_numero;
+
 };
 
 int main() {
@@ -376,10 +411,14 @@ int main() {
 
         switch (opcion) {
             case 1: {
-                size_t num_frames;
+                size_t num_frames,policy_choice;
                 std::cout << "Ingrese el número de frames para el BufferPool: ";
                 std::cin >> num_frames;
-                bufferManager = new BufferManager(num_frames);
+                std::cout << "Seleccione política de reemplazo (1. LRU, 2. CLOCK): ";
+                std::cin >> policy_choice;
+                auto policy = (policy_choice == 1) ? BufferManager::ReplacementPolicy::LRU
+                                                   : BufferManager::ReplacementPolicy::CLOCK;
+                bufferManager = new BufferManager(num_frames, policy);
                 std::cout << "BufferPool creado con " << num_frames << " frames." << std::endl;
                 break;
             }
