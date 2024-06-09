@@ -143,9 +143,10 @@ private:
         
     };
 
-    vector<PageEntry> entries;
+    
         int clockHand;
 public:
+    vector<PageEntry> entries;
     // Constructor
     PageTable(): clockHand(0) {}
     
@@ -255,10 +256,10 @@ public:
     int obtenerFrameLRU() const {
     int lruIndex = -1;
     int lruValue = INT_MAX;
-    for (const auto& entry : entries) {
-        if (entry.PinCount == 0 && entry.LastUsed < lruValue) {
-            lruValue = entry.LastUsed;
-            lruIndex = entry.FrameId;
+    for (size_t i=0 ;i<entries.size(); ++i) {
+        if (entries[i].PinCount == 0 && entries[i].LastUsed < lruValue) {
+            lruValue = entries[i].LastUsed;
+            lruIndex = i;
         }
     }
     return lruIndex;
@@ -311,22 +312,38 @@ public:
     }
 
     void consultarPagina(int numPagina) {
-        if (pageTable.verificarExistenciaDePagina(numPagina)) {
+    if (pageTable.verificarExistenciaDePagina(numPagina)) {
+        pageTable.aumentarPinCount(numPagina);
+        cout << "El contador Pin Count aumentó en 1." << endl;
+    } else {
+        size_t frame_num = bufferPool.buscarFrameVacio();
+        if (frame_num != bufferPool.getNumFrames()) {
+            std::string nombre_archivo = obtenerNombreArchivo(numPagina);
+            bufferPool.cargarPaginaAlFrame(frame_num, nombre_archivo);
+            pageTable.agregarEntrada(frame_num, numPagina);
             pageTable.aumentarPinCount(numPagina);
-            cout << "el contador Pin Count aumento en 1" << endl;
+            std::cout << "La página " << numPagina << " ha sido cargada en el frame " << frame_num << " y el contador de PinCount ha sido incrementado." << std::endl;
         } else {
-            size_t frame_num = bufferPool.buscarFrameVacio();
-            if (frame_num != bufferPool.getNumFrames()) {
+            // No hay frames vacíos disponibles, reemplazar la página LRU
+            size_t lruFrame = pageTable.obtenerFrameLRU();
+            if (lruFrame != -1) {
+                // Obtener el número de página asociado al frame LRU
+                int lruPageId = pageTable.entries[lruFrame].PageId;
+                // Eliminar la entrada de la tabla de páginas para la página LRU
+                pageTable.entries.erase(pageTable.entries.begin() + lruFrame);
+                // Cargar la nueva página en el frame LRU
                 std::string nombre_archivo = obtenerNombreArchivo(numPagina);
-                cargarPaginaEnBufferPool(frame_num, nombre_archivo);
-                pageTable.agregarEntrada(frame_num, numPagina);
+                bufferPool.cargarPaginaAlFrame(lruFrame, nombre_archivo);
+                // Agregar la nueva entrada en la tabla de páginas
+                pageTable.agregarEntrada(lruFrame, numPagina);
                 pageTable.aumentarPinCount(numPagina);
-                std::cout << "La página " << numPagina << " ha sido cargada en el frame " << frame_num << " y el contador de PinCount ha sido incrementado." << std::endl;
+                std::cout << "La página " << numPagina << " ha sido cargada en el frame " << lruFrame << " y el contador de PinCount ha sido incrementado." << std::endl;
             } else {
                 std::cout << "No hay frames vacíos disponibles para cargar la página." << std::endl;
             }
         }
     }
+}
 
     void cancelarSolicitud(int numPagina){
         if (pageTable.verificarExistenciaDePagina(numPagina)) {
@@ -386,12 +403,14 @@ public:
     }
     return frame_num;
 }
+    BufferPool* obtenerBufferPool() {
+        return &bufferPool;
+    }
 private:
     ReplacementPolicy policy;
     BufferPool bufferPool;
     PageTable pageTable;
     std::unordered_map<std::string, int> archivo_a_numero;
-
 };
 
 int main() {
