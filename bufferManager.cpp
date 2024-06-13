@@ -43,6 +43,8 @@ public:
         }
         return contenido_str;
     }
+
+    
 };
 
 // Clase Frame para manejar cada frame del buffer pool
@@ -58,8 +60,8 @@ public:
     void agregarPagina(const std::string& nombre_archivo) {
         if (estaVacio()) {
             pagina = Pagina(nombre_archivo);
-        } else {
-            std::cout << "El frame ya tiene una página cargada. No se puede agregar más páginas." << std::endl;
+        } else {        
+            pagina=Pagina(nombre_archivo);
         }
     }
 
@@ -69,6 +71,10 @@ public:
         } else {
             std::cout << "El frame está vacío." << std::endl;
         }
+    }
+
+     void reemplazarPagina(const std::string& nombre_archivo) {
+        pagina = Pagina(nombre_archivo);
     }
 };
 
@@ -128,35 +134,52 @@ public:
 };
 
 
-
 class PageTable {
 private:
+    int manecilla = 0; // puntero para el algoritmo del reloj
+
     struct PageEntry {
         int FrameId;
         int PageId;
         int DirtyBit;
         int PinCount;
+        int BirtyBit;
         int LastUsed;
+        bool Pineed;
 
-        PageEntry(int frameId, int pageId) : FrameId(frameId), PageId(pageId), DirtyBit(0), PinCount(0), LastUsed(0) {}
+        PageEntry(int frameId, int pageId) : FrameId(frameId), PageId(pageId), DirtyBit(0), PinCount(0), BirtyBit(0),LastUsed(0), Pineed(false){}
     };
 
-    vector<PageEntry> entries;
+    
+
 
 public:
+vector<PageEntry> entries;
     // Constructor
-    PageTable() {}
+    PageTable(){}
 
     // Destructor
     ~PageTable() {}
 
+    // Insertar pinned
+    void insertarPinned(int pageId) {
+        for (size_t i = 0; i < entries.size(); ++i) {
+            if (entries[i].PageId == pageId) {
+                entries[i].Pineed = true;
+                cout << "Página con PageId " << pageId << " marcada como Pinned." << endl;
+                return;
+            }
+        }
+        cout << "No se encontró ninguna página con PageId " << pageId << "." << endl;
+    }
+
     // Mostrar la tabla 
     void mostrarTabla() {
-        cout << "Frame id\tPageId\tDirtyBit\tPin Count\tLast Used" << endl;
+        cout << "Frame id\tPageId\tDirtyBit\tPin Count\tBirtyBit\tPinned" << endl;
         for (size_t i = 0; i < entries.size(); ++i) {
             cout << entries[i].FrameId << "\t\t" << entries[i].PageId << "\t\t" 
                  << entries[i].DirtyBit << "\t\t" << entries[i].PinCount << "\t\t" 
-                 << entries[i].LastUsed << endl;
+                 << entries[i].BirtyBit << "\t\t" << (entries[i].Pineed ? 1 : 0) << endl;
         }
         cout << endl;
     }
@@ -210,7 +233,6 @@ public:
             }
         }
     }
-
     void incrementarLastUsed(int numPagina) {
         for (size_t i = 0; i < entries.size(); ++i) {
             if (entries[i].PageId == numPagina) {
@@ -232,10 +254,86 @@ public:
         }
     }
 
+    void incrementaBirtyBit(int numPagina) {
+        for (size_t i = 0; i < entries.size(); ++i) {
+            if (entries[i].PageId == numPagina) {
+                entries[i].BirtyBit++;
+                break;
+            }
+        }
+    }
+
+    // Decrementar el valor de BirtyBit de una página dada
+    void decrementaBirtyBit(int numPagina) {
+        for (size_t i = 0; i < entries.size(); ++i) {
+            if (entries[i].PageId == numPagina) {
+                if (entries[i].BirtyBit > 0) {
+                    entries[i].BirtyBit--;
+                }
+                break;
+            }
+        }
+    }
+
+  /*   void aumentarManecilla(){
+        manecilla = manecilla + 1;
+    }
+ */
     // Actualizar los datos en la tabla de páginas cuando se solicita una página
-    void actualizarDatos(int numPaginaActualizar, int numFilaFrameId) {
-        entries.push_back(PageEntry(numFilaFrameId, numPaginaActualizar));
-        aumentarPinCount(numPaginaActualizar); // Incrementar el contador de pines
+    
+    void replaceReloj(int frameId, int pageId) {
+        if (entries.empty()) {
+            // Si la tabla está vacía, simplemente añade la nueva entrada
+            agregarEntrada(frameId, pageId);
+            return;
+        }
+
+        bool allFramesInUse = true;
+
+        for (const auto& entry : entries) {
+            if (entry.PinCount == 0) {
+                allFramesInUse = false;
+                break;
+            }
+        }
+
+        if (allFramesInUse) {
+            // Imprimir todos los frames en uso
+            cout << "Todos los frames están en uso:" << endl;
+            for (size_t i = 0; i < entries.size(); ++i) {
+                cout << "Frame " << i << ": PageId=" << entries[i].PageId << ", PinCount=" << entries[i].PinCount << endl;
+            }
+            return;
+        }
+
+        while (true) {
+            // Si encontramos un frame con BirtyBit en 0, PinCount en 0 y Pineed en false, reemplazamos la página
+            if (entries[manecilla].BirtyBit == 0 && entries[manecilla].PinCount == 0 && !entries[manecilla].Pineed) {
+                entries[manecilla].PageId = pageId;
+                entries[manecilla].BirtyBit = 1; // Establecer BirtyBit en 1 porque ahora está recién usada
+                manecilla = (manecilla + 1) % entries.size(); // Mover el puntero al siguiente frame
+                break;
+            } else {
+                // Si BirtyBit es 1 o PinCount es mayor que 0 o Pineed es true, establecemos BirtyBit en 0 y movemos el puntero
+                if (!entries[manecilla].Pineed) {
+                    entries[manecilla].BirtyBit = 0;
+                }
+                manecilla = (manecilla + 1) % entries.size();
+            }
+        }
+    }
+
+
+    void aumentarManecilla(int numeroFrames){
+        manecilla = (manecilla + 1) % numeroFrames;
+    }
+
+     void mostrarManecilla() {
+       cout << "la manecilla esta apuntado al frame: " << manecilla << endl;
+    }
+
+    int getManecilla(){
+        return manecilla;
     }
 
     void agregarEntrada(int frameId, int pageId) {
@@ -250,6 +348,17 @@ public:
         }
         return false;
     }
+    int obtenerFrameLRU() const {
+    int lruIndex = -1;
+    int lruValue = INT_MAX;
+    for (size_t i=0 ;i<entries.size(); ++i) {
+        if (entries[i].PinCount == 0 && entries[i].LastUsed < lruValue) {
+            lruValue = entries[i].LastUsed;
+            lruIndex = i;
+        }
+    }
+    return lruIndex;
+}
 
 
 };
@@ -289,23 +398,79 @@ public:
 
     }
 
+    
+    
     void consultarPagina(int numPagina) {
         if (pageTable.verificarExistenciaDePagina(numPagina)) {
             pageTable.aumentarPinCount(numPagina);
-            cout << "el contador Pin Count aumento en 1" << endl;
+            return;
+        }
+
+        size_t frame_num = bufferPool.buscarFrameVacio();
+        if (frame_num == bufferPool.getNumFrames()) {
+            // No hay marcos vacíos, es necesario reemplazarlos
+            pageTable.replaceReloj(bufferPool.getNumFrames(), numPagina);
+            string nombre_archivo = obtenerNombreArchivo(numPagina);
+
+            int numeroFrameReloj = pageTable.getManecilla() - 1;
+
+            if(numeroFrameReloj == 0){
+                numeroFrameReloj = bufferPool.getNumFrames() - 1;
+            }
+
+
+            bufferPool.cargarPaginaAlFrame(numeroFrameReloj, nombre_archivo);
+       
         } else {
+            // Hay un marco vacío, carga la página en ese marco
+            string nombre_archivo = obtenerNombreArchivo(numPagina);
+            bufferPool.cargarPaginaAlFrame(frame_num, nombre_archivo);
+            pageTable.agregarEntrada(frame_num, numPagina);
+            pageTable.incrementaBirtyBit(numPagina);
+            pageTable.aumentarPinCount(numPagina);
+            //pageTable.aumentarManecilla();
+        }
+    }
+
+    void consultarPagina2(int numPagina) {
+        if (pageTable.verificarExistenciaDePagina(numPagina)) {
+            // Si la página ya está en la tabla de páginas
+            pageTable.aumentarPinCount(numPagina);
+            std::cout << "El contador Pin Count de la página " << numPagina << " se ha aumentado en 1." << std::endl;
+        } else {
+            // Si la página no está en la tabla de páginas
             size_t frame_num = bufferPool.buscarFrameVacio();
             if (frame_num != bufferPool.getNumFrames()) {
+                // Si hay un frame vacío disponible en el buffer pool
                 std::string nombre_archivo = obtenerNombreArchivo(numPagina);
-                cargarPaginaEnBufferPool(frame_num, nombre_archivo);
+                bufferPool.cargarPaginaAlFrame(frame_num, nombre_archivo);
                 pageTable.agregarEntrada(frame_num, numPagina);
                 pageTable.aumentarPinCount(numPagina);
-                std::cout << "La página " << numPagina << " ha sido cargada en el frame " << frame_num << " y el contador de PinCount ha sido incrementado." << std::endl;
+                std::cout << "La página " << numPagina << " ha sido cargada en el frame " << frame_num << " y el contador de PinCount se ha incrementado." << std::endl;
             } else {
-                std::cout << "No hay frames vacíos disponibles para cargar la página." << std::endl;
+                // Si no hay frames vacíos disponibles, se aplica el algoritmo LRU
+                std::cout << "No hay frames disponibles. Aplicando LRU..." << std::endl;
+                size_t lruFrame = pageTable.obtenerFrameLRU();
+                if (lruFrame != -1) {
+                    // Se obtiene el número de página asociado al frame LRU
+                    int lruPageId = pageTable.entries[lruFrame].PageId;
+                    // Se elimina la entrada de la tabla de páginas para la página LRU
+                    pageTable.entries.erase(pageTable.entries.begin() + lruFrame);
+                    // Se carga la nueva página en el frame LRU
+                    std::string nombre_archivo = obtenerNombreArchivo(numPagina);
+                    bufferPool.cargarPaginaAlFrame(lruFrame, nombre_archivo);
+                    // Se agrega la nueva entrada en la tabla de páginas
+                    pageTable.agregarEntrada(lruFrame, numPagina);
+                    pageTable.aumentarPinCount(numPagina);
+                    std::cout << "La página " << numPagina << " ha sido cargada en el frame " << lruFrame << " y el contador de PinCount se ha incrementado." << std::endl;
+                } else {
+                    std::cout << "No hay frames disponibles ni páginas LRU para reemplazar." << std::endl;
+                    // Aquí podrías considerar algún manejo adicional, como liberar espacio en el buffer pool o manejar un error.
+                }
             }
         }
     }
+
 
     void cancelarSolicitud(int numPagina){
         if (pageTable.verificarExistenciaDePagina(numPagina)) {
@@ -317,20 +482,45 @@ public:
         }
     }
 
-    void LecturaEscritura(int numPagina){
+    void LecturaEscritura1(int numPagina){
     // Verificar la existencia de la página en la tabla de páginas
-        if (!pageTable.verificarExistenciaDePagina(numPagina)) {
-            // Si la página no está en la tabla de páginas, imprimir un mensaje de error y salir de la función
-            cout << "La página " << numPagina << " no está en la memoria." << endl;
-            return;
+        bool paginaExiste = pageTable.verificarExistenciaDePagina(numPagina);
+        
+        if (!paginaExiste) {
+            // La página no existe, proceder con la carga y reemplazo si es necesario
+            size_t frame_num = bufferPool.buscarFrameVacio();
+            
+            if (frame_num == bufferPool.getNumFrames()) {
+                // No hay marcos vacíos, es necesario reemplazarlos
+                pageTable.replaceReloj(bufferPool.getNumFrames(), numPagina);
+                string nombre_archivo = obtenerNombreArchivo(numPagina);
+
+                int numeroFrameReloj = pageTable.getManecilla() - 1;
+                if (numeroFrameReloj == 0) {
+                    numeroFrameReloj = bufferPool.getNumFrames() - 1;
+                }
+
+                bufferPool.cargarPaginaAlFrame(numeroFrameReloj, nombre_archivo);
+            } else {
+                // Hay un marco vacío, carga la página en ese marco
+                string nombre_archivo = obtenerNombreArchivo(numPagina);
+                bufferPool.cargarPaginaAlFrame(frame_num, nombre_archivo);
+                pageTable.agregarEntrada(frame_num, numPagina);
+                pageTable.incrementaBirtyBit(numPagina);
+                pageTable.aumentarManecilla(bufferPool.getNumFrames());
+            }
         }
 
+        else{
+            pageTable.incrementaBirtyBit(numPagina);
+
+        }
+
+
+        // Solicitar operación de lectura o escritura
         int opcion;
         cout << "Ingrese 1 para lectura o 2 para escritura: "; 
         cin >> opcion;
-
-        // Incrementar el registro "Last Used" independientemente de si es una operación de lectura o escritura
-        pageTable.incrementarLastUsed(numPagina);
 
         // Manejar la operación según la opción ingresada por el usuario
         switch(opcion){
@@ -349,6 +539,45 @@ public:
     }
 
 
+     void LecturaEscritura(int numPagina){
+    // Verificar la existencia de la página en la tabla de páginas
+        if (!pageTable.verificarExistenciaDePagina(numPagina)) {
+            // Si la página no está en la tabla de páginas, imprimir un mensaje de error y salir de la función
+            cout << "La página " << numPagina << " no está en la memoria." << endl;
+            return;
+        }
+
+        int opcion;
+        cout << "Ingrese 1 para lectura o 2 para escritura: "; 
+        cin >> opcion;
+        // Incrementar el registro "Last Used" independientemente de si es una operación de lectura o escritura
+        // Manejar la operación según la opción ingresada por el usuario
+        switch(opcion){
+            case 1: // Lectura
+                cout << "Realizando operación de lectura en la página " << numPagina << "." << endl;
+                pageTable.incrementarLastUsed(numPagina);
+
+                break;
+            case 2: // Escritura
+                cout << "Realizando operación de escritura en la página " << numPagina << "." << endl;
+                // Marcar la página como modificada (Dirty Bit)
+                pageTable.cambiarDirty(numPagina);
+                pageTable.incrementarLastUsed(numPagina);
+
+                break;
+            default:
+                cout << "Opción no válida." << endl;
+                break;
+        }
+    }
+
+    void InsertarPinned(int pagina){
+        pageTable.insertarPinned(pagina);
+    }
+
+    void mostrarManecilla() {
+        pageTable.mostrarManecilla();
+    }
 
     void mostrarContenidoFrame(int numFrame) {
         bufferPool.mostrarContenidoFrame(numFrame);
@@ -359,70 +588,121 @@ public:
     }
 };
 
+
 int main() {
     BufferManager* bufferManager = nullptr;
-    int numero = 4;
-    int opcion = 0;
 
-    while (opcion != 6) {
-        std::cout << "\nMenu:\n";
-        std::cout << "1. Crear BufferPool\n";
-        std::cout << "2. Consultar página en BufferPool\n";
-        std::cout << "3. Lectura/Escritura de una página en BufferPool\n";
-        std::cout << "4. Mostrar contenido de un frame\n";
-        std::cout << "5. Salir\n";
-        std::cout << "Seleccione una opción: ";
-        std::cin >> opcion;
+    int elegirAlgoritmo;
+    cout << "Presione 1 si quiere usar el algoritmo de clock o 2 si desea el LRU: ";
+    cin >> elegirAlgoritmo;
 
-        switch (opcion) {
-            case 1: {
-                size_t num_frames;
-                std::cout << "Ingrese el número de frames para el BufferPool: ";
-                std::cin >> num_frames;
-                bufferManager = new BufferManager(num_frames);
-                std::cout << "BufferPool creado con " << num_frames << " frames." << std::endl;
-                break;
-            }
-            case 2: {
-                int opcion;
-                int pagina;
-                cout << "ingrese 1 si desea solicitud o 2 para cancelar solicitud de una pagina"; cin >> opcion;
-                if(opcion == 1){
-                    cout << "Ingrese el número de página que desea consultar: ";
-                    cin >> pagina;
-                    bufferManager->consultarPagina(pagina);
+    if (elegirAlgoritmo == 1) {
+        int opcion = 0;
+        while (opcion != 7) {  // Cambié el número de la opción de salida a 7, como indicado en el menú
+            cout << "\nMenu:\n";
+            cout << "1. Crear BufferPool\n";
+            cout << "2. Consultar pagina en BufferPool\n";
+            cout << "3. Lectura/Escritura de una pagina en BufferPool\n";
+            cout << "4. Insertar Pinned en una pagina\n";
+            cout << "5. Mostrar tabla\n";
+            cout << "6. Mostrar contenido de frame\n";
+            cout << "7. Salir\n";
+            cout << "Seleccione una opcion: ";
+            cin >> opcion;
+
+            switch (opcion) {
+                case 1: {
+                    size_t num_frames;
+                    cout << "Ingrese el numero de frames para el BufferPool: ";
+                    cin >> num_frames;
+                    bufferManager = new BufferManager(num_frames);
+                    cout << "BufferPool creado con " << num_frames << " frames." << endl;
+                    break;
                 }
-                else{
-                    cout << "Ingrese el número de página que desea cancelar solicitud ";
-                    cin >> pagina;
-                    bufferManager->cancelarSolicitud(pagina);
+                case 2: {
+                    if (!bufferManager) {
+                        cout << "Primero debe crear el BufferPool." << endl;
+                    } else {
+                        int sub_opcion;
+                        int pagina;
+                        cout << "Ingrese 1 si desea solicitar o 2 para cancelar solicitud de una pagina: ";
+                        cin >> sub_opcion;
+                        if (sub_opcion == 1) {
+                            cout << "Ingrese el numero de pagina que desea consultar: ";
+                            cin >> pagina;
+                            bufferManager->consultarPagina(pagina);
+                        } else if (sub_opcion == 2) {
+                            cout << "Ingrese el número de página que desea cancelar solicitud: ";
+                            cin >> pagina;
+                            bufferManager->cancelarSolicitud(pagina);
+                        } else {
+                            cout << "Opción no válida." << endl;
+                        }
+                    }
+                    break;
                 }
-               
-                break;
-            }
-
-            case 3: {
-                int pagina;
-                cout << "ingrese el numero de pagina que desea leer o modificar: ";
-                cin >> pagina;
-                bufferManager->LecturaEscritura(pagina);
-                break;
-            }
-
-            case 4: {
-                if (!bufferManager) {
-                    std::cout << "Primero debe crear el BufferPool." << std::endl;
-                } else {
-                    bufferManager->mostrarTablaDePaginas();
+                case 3: {
+                    if (!bufferManager) {
+                        cout << "Primero debe crear el BufferPool." << endl;
+                    } else {
+                        int pagina;
+                        cout << "Ingrese el numero de pagina que desea leer o modificar: ";
+                        cin >> pagina;
+                        bufferManager->LecturaEscritura1(pagina);
+                    }
+                    break;
                 }
-                break;
-            }
-
-            case 5: {
-                cout << "saliedo del programa..." << endl;
-                break;
+                case 4: {
+                    if (!bufferManager) {
+                        cout << "Primero debe crear el BufferPool." << endl;
+                    } else {
+                        int pagina;
+                        cout << "Ingrese el numero de pagina que desea pinear: ";
+                        cin >> pagina;
+                        bufferManager->InsertarPinned(pagina);
+                    }
+                    break;
+                }
+                case 5: {
+                    if (!bufferManager) {
+                        cout << "Primero debe crear el BufferPool." << endl;
+                    } else {
+                        bufferManager->mostrarTablaDePaginas();
+                        bufferManager->mostrarManecilla();
+                    }
+                    break;
+                }
+                case 6: {
+                    if (!bufferManager) {
+                        cout << "Primero debe crear el BufferPool." << endl;
+                    } else {
+                        int frame;
+                        cout << "Ingrese el numero de frame: ";
+                        cin >> frame;
+                        bufferManager->mostrarContenidoFrame(frame);
+                    }
+                    break;
+                }
+                case 7: {
+                    cout << "Saliendo del programa..." << endl;
+                    break;
+                }
+                default: {
+                    cout << "Opción no válida. Por favor, intente de nuevo." << endl;
+                    break;
+                }
             }
         }
+    } else if (elegirAlgoritmo == 2) {
+        // Aquí puedes implementar el menú para el algoritmo LRU si lo necesitas
+        cout << "Algoritmo LRU seleccionado. (A implementar)" << endl;
+    } else {
+        cout << "Opción no válida." << endl;
     }
+
+    if (bufferManager) {
+        delete bufferManager;
+    }
+
+    return 0;
 }
-//---
