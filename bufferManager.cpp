@@ -215,6 +215,17 @@ vector<PageEntry> entries;
         return -1; // Indica que no se encontró la página
     }
 
+
+    bool isDirty(int pageId) {
+        for (const auto& entry : entries) {
+            if (entry.PageId == pageId) {
+                return entry.DirtyBit == 1;
+            }
+        }
+        // Si no se encuentra la página, podríamos lanzar una excepción o devolver false
+        return false;
+    }
+
     // Insertar pinned
     void insertarPinned(int pageId) {
         for (size_t i = 0; i < entries.size(); ++i) {
@@ -332,7 +343,7 @@ vector<PageEntry> entries;
     void incrementaBirtyBit(int numPagina) {
         for (size_t i = 0; i < entries.size(); ++i) {
             if (entries[i].PageId == numPagina) {
-                entries[i].BirtyBit++;
+                entries[i].BirtyBit = 1;
                 break;
             }
         }
@@ -343,7 +354,7 @@ vector<PageEntry> entries;
         for (size_t i = 0; i < entries.size(); ++i) {
             if (entries[i].PageId == numPagina) {
                 if (entries[i].BirtyBit > 0) {
-                    entries[i].BirtyBit--;
+                    entries[i].BirtyBit = 0;
                 }
                 break;
             }
@@ -616,11 +627,14 @@ public:
         switch(opcion){
             case 1: // Lectura
                 cout << "Realizando operación de lectura en la página " << numPagina << "." << endl;
+                pageTable.aumentarPinCount(numPagina);
                 break;
             case 2: // Escritura
                 cout << "Realizando operación de escritura en la página " << numPagina << "." << endl;
                 // Marcar la página como modificada (Dirty Bit)
                 pageTable.AumentarDirty(numPagina);
+                pageTable.aumentarPinCount(numPagina);
+
 
                 break;
             default:
@@ -664,13 +678,17 @@ public:
 
     void GuardarValorerDisco(int pagina){
 
-        if(pageTable.entries[pagina].DirtyBit != 1){
-            cout << "No se puede insertar , porque el dirtyBit no es 1" << endl;
-        }
-        else{
-            pageTable.DecrementarDirty(pagina);
+        cout << pageTable.entries[pagina].DirtyBit << endl;
+
+        if(pageTable.entries[pagina].DirtyBit == 1){
             bufferPool.insertarTextoEnPagina(pagina);
+            pageTable.DecrementarDirty(pagina);
+            return;
         }
+        cout << "No se puede insertar , porque el dirtyBit no es 1" << endl;
+        
+            
+        
     }
 
     void GuardarBloque(int pagina){
