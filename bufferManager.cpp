@@ -324,6 +324,7 @@ public:
             pageTable.aumentarPinCount(numPagina);
             std::cout << "La página " << numPagina << " ha sido cargada en el frame " << frame_num << " y el contador de PinCount ha sido incrementado." << std::endl;
         } else {
+            cout<<"No hay frames disponibles aplicar LRU"<<endl;
             // No hay frames vacíos disponibles, reemplazar la página LRU
             size_t lruFrame = pageTable.obtenerFrameLRU();
             if (lruFrame != -1) {
@@ -338,9 +339,7 @@ public:
                 pageTable.agregarEntrada(lruFrame, numPagina);
                 pageTable.aumentarPinCount(numPagina);
                 std::cout << "La página " << numPagina << " ha sido cargada en el frame " << lruFrame << " y el contador de PinCount ha sido incrementado." << std::endl;
-            } else {
-                std::cout << "No hay frames vacíos disponibles para cargar la página." << std::endl;
-            }
+            } 
         }
     }
 }
