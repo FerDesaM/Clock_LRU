@@ -3,13 +3,47 @@
 #include <string>
 #include <vector>
 #include <unordered_map>
+#include "calcular.h"
 #include <climits>
-
+#include <queue>
 using namespace std;
+
+
+struct Requerimiento
+{
+    int pagina;
+    int accion;
+};
+
+queue<Requerimiento> Requerimientos;
+
+
+bool hayEscrituraPendiente(int pagina) {
+    // Creamos una copia de la cola original para no modificarla
+    queue<Requerimiento> colaTemporal = Requerimientos;
+
+    // Bandera para indicar si encontramos una escritura pendiente
+    bool escrituraPendiente = false;
+
+    // Iteramos sobre la cola temporal
+    while (!colaTemporal.empty()) {
+        Requerimiento req = colaTemporal.front();
+        colaTemporal.pop();
+
+        if (req.pagina == pagina && req.accion == 2) {
+            escrituraPendiente = true;
+            break; // Terminamos la iteración si encontramos una escritura pendiente
+        }
+    }
+
+    return escrituraPendiente;
+}
+
 
 // Clase Pagina para manejar el contenido de cada página
 class Pagina {
 private:
+    int tamanioTotal = 512;
     std::string ruta;
     std::vector<std::string> contenido;
 
@@ -575,7 +609,7 @@ public:
     void cancelarSolicitud(int numPagina){
         if (pageTable.verificarExistenciaDePagina(numPagina)) {
             pageTable.descontarPinCount(numPagina);
-            cout << "el contador Pin Count disminuyo en 1" << endl;
+            cout << "el contadozr Pin Count disminuyo en 1" << endl;
         }
         else{
             cout << "la pagina no esta siendo solicitado" << endl;
@@ -609,25 +643,50 @@ public:
                 pageTable.incrementaBirtyBit(numPagina);
                 pageTable.aumentarManecilla(bufferPool.getNumFrames());
             }
+
         }
 
-        else{
+         else{
             if(pageTable.entries[numPagina].BirtyBit == 0){
                 pageTable.incrementaBirtyBit(numPagina);
             }
         }
-
+        
 
         // Solicitar operación de lectura o escritura
         int opcion;
         cout << "Ingrese 1 para lectura o 2 para escritura: "; 
         cin >> opcion;
 
+        Requerimiento req = {numPagina, opcion};
+        Requerimientos.push(req);
         // Manejar la operación según la opción ingresada por el usuario
         switch(opcion){
             case 1: // Lectura
-                cout << "Realizando operación de lectura en la página " << numPagina << "." << endl;
-                pageTable.aumentarPinCount(numPagina);
+                if(pageTable.isDirty(numPagina) == true){
+                    cout << "Error en el proceso de requerimineto , el dity bit es 1" << endl;
+                    cout << "Para procesar el proceso se debe guardar el archivo" << endl;
+                    cout << "1. Guardar contenido" << endl;
+                    cout << "2. No guardar contenido" << endl;
+                    cout << "opcion : ";
+                    int opcion;
+                    cin >> opcion;
+                    if(opcion == 1){
+                        cout << "El contenido de la pagina ha sido guardado" << endl;
+                        pageTable.aumentarPinCount(numPagina);
+                        pageTable.DecrementarDirty(numPagina);
+                    }
+                    else{
+                        cout << "El requerimiento sera guardado en la cola de espera" << endl;
+                        Requerimiento requerimiento = {numPagina, 2};
+                        //Espera.push(requerimiento);
+                    }
+
+                }
+                else{
+                    cout << "Realizando operación de lectura en la página " << numPagina << "." << endl;
+                    pageTable.aumentarPinCount(numPagina);
+                }
                 break;
             case 2: // Escritura
                 cout << "Realizando operación de escritura en la página " << numPagina << "." << endl;
@@ -717,8 +776,124 @@ public:
     void mostrarTablaDePaginas2() {
         pageTable.mostrarTablaLRU();
     }
-};
 
+    void llenarLongitudFija(const string& archivoTxt, const string& esquema) {
+        ifstream inFile(archivoTxt);
+        if (!inFile.is_open()) {
+            cerr << "Error al abrir el archivo de registros" << endl;
+            return;
+        }
+
+        string line;
+        vector<vector<string>> blocks(16);
+        int tamanioTotal = 1024;
+
+        while (getline(inFile, line)) {
+            int tamanioRegistro = calcularTamanioFijoLinea(esquema);
+            bool inserted = false;
+
+            cout << "tamanio registro: " << tamanioRegistro << endl;
+
+            for (int i = 0; i < 16; ++i) {
+                int currentBlockSize = 0;
+                for (const auto& registro : blocks[i]) {
+                    currentBlockSize += calcularTamanioFijoLinea(esquema);
+                }
+
+                if (currentBlockSize + tamanioRegistro <= tamanioTotal) {
+                    //cout << "tamanio registro: " << current_exception << endl;
+                    blocks[i].push_back(line);
+                    inserted = true;
+                    break;
+                }
+            }
+         
+
+
+            if (!inserted) {
+                cerr << "No hay espacio suficiente para insertar el registro: " << line << endl;
+            }
+        }
+
+        inFile.close();
+
+        // Escribir los bloques en archivos
+        for (int i = 0; i < 16; ++i) {
+            std::string nombre_archivo = "bloque_" + std::to_string(i) + ".txt";
+            std::string ruta = "Bloques/" + nombre_archivo;
+            string blockFileName = ruta;
+            ofstream outFile(blockFileName);
+            if (!outFile.is_open()) {
+                cerr << "Error al abrir el archivo de salida para el bloque " << blockFileName << endl;
+                continue;
+            }
+
+            for (const auto& registro : blocks[i]) {
+                outFile << registro << endl;
+            }
+
+            outFile.close();
+        }
+    }
+
+    void llenarLongitudVariable(const string& archivoTxt, const string& esquema) {
+        ifstream inFile(archivoTxt);
+        if (!inFile.is_open()) {
+            cerr << "Error al abrir el archivo de registros" << endl;
+            return;
+        }
+
+        string line;
+        vector<vector<string>> blocks(16);
+        int tamanioTotal = 512;
+
+        // Ignorar la primera línea del archivo (cabecera)
+        getline(inFile, line);
+
+        while (getline(inFile, line)) {
+            int tamanioRegistro = calcularTamanioLineaVariable(line, esquema);
+            bool inserted = false;
+
+            for (int i = 0; i < 16; ++i) {
+                int currentBlockSize = 0;
+                for (const auto& registro : blocks[i]) {
+                    currentBlockSize += calcularTamanioLineaVariable(registro, esquema);
+                }
+
+                if (currentBlockSize + tamanioRegistro <= tamanioTotal) {
+                    blocks[i].push_back(line);
+                    inserted = true;
+                    cout << "Registro insertado en el bloque " << i + 1 << ": " << line << endl; // Mensaje de depuración
+                    break;
+                }
+            }
+
+            if (!inserted) {
+                cerr << "No hay espacio suficiente para insertar el registro: " << line << endl;
+            }
+        }
+
+        inFile.close();
+
+        // Escribir los bloques en archivos
+        for (int i = 0; i < 16; ++i) {
+            std::string nombre_archivo = "bloque_" + std::to_string(i) + ".txt";
+            std::string ruta = "Bloques/" + nombre_archivo;
+            string blockFileName = ruta;
+            ofstream outFile(blockFileName);
+            if (!outFile.is_open()) {
+                cerr << "Error al abrir el archivo de salida para el bloque " << blockFileName << endl;
+                continue;
+            }
+
+            for (const auto& registro : blocks[i]) {
+                outFile << registro << endl;
+            }
+
+            outFile.close();
+        }
+    }
+};
 
 int main() {
     BufferManager* bufferManager = nullptr;
@@ -843,7 +1018,7 @@ int main() {
         }
     } else if (elegirAlgoritmo ==  2){
         int opcion = 0;
-        while (opcion != 7) {
+        while (opcion != 9) {
             std::cout << "\nMenu:\n";
             std::cout << "1. Crear BufferPool\n";
             std::cout << "2. Consultar pagina en BufferPool\n";
@@ -851,7 +1026,9 @@ int main() {
             std::cout << "4. Mostrar tabla\n";
             std::cout << "5. Mostrar contenido de frame\n";
             std::cout<<  "6. Pinned pagina\n";
-            std::cout << "7. Salir\n";
+            std::cout<<  "7. Llenas registros con longitud fija\n";
+            std::cout<<  "8. Llenas registros con longitud variable\n";
+            std::cout << "9. Salir\n";
             std::cout << "Seleccione una opcion: ";
             std::cin >> opcion;
 
@@ -912,6 +1089,27 @@ int main() {
                 }
 
                 case 7: {
+                    string archivoTxt = "titanic.txt";
+                    string archivoEsquema = "esquemas.txt";
+                    string esquema = getSchema(archivoEsquema, "titanic");
+
+                    if (!esquema.empty()) {
+                        bufferManager->llenarLongitudFija(archivoTxt, esquema);
+                    }
+                    
+                }
+
+                case 8 : {
+                    string archivoTxt = "titanic.txt";
+                    string archivoEsquema = "esquemas.txt";
+                    string esquema = getSchema(archivoEsquema, "titanic");
+
+                    if (!esquema.empty()) {
+                        bufferManager->llenarLongitudVariable(archivoTxt, esquema);
+                    }
+                }
+
+                case 9: {
                     cout << "saliedo del programa..." << endl;
                     break;
                 }
