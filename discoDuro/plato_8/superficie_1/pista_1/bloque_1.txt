@@ -1,0 +1,14 @@
+Plato: 8 Superficie: 1 Pista: 1 bloque 1
+===================
+Plato: 8 Superficie: 1 Pista: 1 Sector: 1 --
+
+-------------------
+Plato: 8 Superficie: 1 Pista: 1 Sector: 2 --
+
+-------------------
+Plato: 8 Superficie: 1 Pista: 1 Sector: 3 --
+
+-------------------
+Plato: 8 Superficie: 1 Pista: 1 Sector: 4 --
+
+-------------------

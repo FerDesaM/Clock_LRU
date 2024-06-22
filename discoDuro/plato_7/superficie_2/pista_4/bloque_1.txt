@@ -1,0 +1,14 @@
+Plato: 7 Superficie: 2 Pista: 4 bloque 1
+===================
+Plato: 7 Superficie: 2 Pista: 4 Sector: 1 --
+
+-------------------
+Plato: 7 Superficie: 2 Pista: 4 Sector: 2 --
+
+-------------------
+Plato: 7 Superficie: 2 Pista: 4 Sector: 3 --
+
+-------------------
+Plato: 7 Superficie: 2 Pista: 4 Sector: 4 --
+
+-------------------

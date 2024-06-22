@@ -1,0 +1,22 @@
+Plato: 1 Superficie: 1 Pista: 2 bloque 1
+===================
+Plato: 1 Superficie: 1 Pista: 2 Sector: 1 --
+8#0#3#Palsson, Master. Gosta Leonard#male#2#3#1#349909#21.075##S
+9#1#3#Johnson, Mrs. Oscar W (Elisabeth Vilhelmina Berg)#female#27#0#2#347742#11.1333##S
+
+-------------------
+Plato: 1 Superficie: 1 Pista: 2 Sector: 2 --
+10#1#2#Nasser, Mrs. Nicholas (Adele Achem)#female#14#1#0#237736#300.708##C
+11#1#3#Sandstrom, Miss. Marguerite Rut#female#4#1#1#PP 9549#16.7#G6#S
+
+-------------------
+Plato: 1 Superficie: 1 Pista: 2 Sector: 3 --
+12#1#1#Bonnell, Miss. Elizabeth#female#58#0#0#113783#26.55#C103#S
+13#0#3#Saundercock, Mr. William Henry#male#20#0#0#A/5. 2151#08.05##S
+
+-------------------
+Plato: 1 Superficie: 1 Pista: 2 Sector: 4 --
+14#0#3#Andersson, Mr. Anders Johan#male#39#1#5#347082#31.275##S
+15#0#3#Vestrom, Miss. Hulda Amanda Adolfina#female#14#0#0#350406#7.8542##S
+
+-------------------
