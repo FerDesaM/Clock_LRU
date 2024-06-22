@@ -1,8 +1,8 @@
-#include "disksproub.h"
+#include "hardDisk.h"
 #include "bufferManager.h"
 using namespace std;
-int main() {/*
-    int num_platos, num_pistas, num_sectores, tam_sector;
+int main() {
+    /*int num_platos, num_pistas, num_sectores, tam_sector;
     bool continuar = true;
 
     do {
