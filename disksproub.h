@@ -7,9 +7,59 @@
 #include <sys/stat.h>
 #include <unistd.h>
 #include <sstream>
-#include <errno.h>
+#include <algorithm>
 
 using namespace std;
+
+struct BlockHeader {
+    int plato;
+    int superficie;
+    int pista;
+    int sector;
+};
+
+class Block {
+public:
+    BlockHeader header;
+    vector<string> sectores;
+
+    Block(int plato, int superficie, int pista, int sector, int tamanoSector, int numSectoresPorBloque) {
+        header.plato = plato;
+        header.superficie = superficie;
+        header.pista = pista;
+        header.sector = sector;
+
+        // Crear sectores vacíos
+        for (int i = 0; i < numSectoresPorBloque; i++) {
+            sectores.push_back(string(tamanoSector, ' '));
+        }
+    }
+
+    string getSectorData(int index) {
+        if (index >= 0 && index < sectores.size()) {
+            return sectores[index];
+        }
+        return "";
+    }
+
+    void setSectorData(int index, const string &data) {
+        if (index >= 0 && index < sectores.size()) {
+            sectores[index] = data;
+        }
+    }
+
+    void addRegistro(const string &registro, int index) {
+        if (index >= 0 && index < sectores.size()) {
+            sectores[index] += registro + "\n";
+        }
+    }
+
+    void eliminarRegistro(int index) {
+        if (index >= 0 && index < sectores.size()) {
+            sectores[index] = "";
+        }
+    }
+};
 
 class DiscoDuro {
 private:
@@ -71,11 +121,13 @@ public:
         }
         cout << "La estructura del disco ha sido creada exitosamente." << endl;
     }
+
     int calcularLineasPorSector() {
         int tamano_sector = tam_sect;
         int tamano_linea = 256;
-            return tamano_sector / tamano_linea;
-}
+        return tamano_sector / tamano_linea;
+    }
+
     void crearArchivo(const string &rutaArchivo) {
         ofstream archivo(rutaArchivo);
         cout << "Creando archivo: " << rutaArchivo << endl;
@@ -101,120 +153,194 @@ public:
         }
     }
 
+    void guardarTextoEnBloque(const std::string &archivoTxt) {
+        if (!discoExiste()) {
+            std::cerr << "El disco no existe." << std::endl;
+            return;
+        }
+
+        std::ifstream archivo(archivoTxt);
+        if (!archivo.is_open()) {
+            std::cerr << "Error al abrir el archivo " << archivoTxt << std::endl;
+            return;
+        }
+
+        std::vector<std::string> contenido;
+        std::string linea;
+        while (std::getline(archivo, linea)) {
+            contenido.push_back(linea);
+        }
+        archivo.close();
+
+        int lineas_por_sector = calcularLineasPorSector();
+
+        int sectorIndex = 0;
+        for (int plato = 1; plato <= num_platos; ++plato) {
+            for (int superficie = 1; superficie <= 2; ++superficie) {
+                for (int pista = 1; pista <= num_pist; ++pista) {
+                    for (int sector = 1; sector <= sectoresPorPista; ++sector) {
+                        std::string archivoSector = "discoDuro/plato_" + std::to_string(plato) + "/superficie_" + std::to_string(superficie) + "/pista_" + std::to_string(pista) + "/sector_" + std::to_string(sector) + ".txt";
+
+                        if (sectorDisponible(archivoSector)) {
+                            std::ofstream archivoEscritura(archivoSector);
+                            if (archivoEscritura.is_open()) {
+                                int lineasEscritas = 0;
+                                while (sectorIndex < contenido.size() && lineasEscritas < lineas_por_sector) {
+                                    archivoEscritura << contenido[sectorIndex] << std::endl;
+                                    ++lineasEscritas;
+                                    ++sectorIndex;
+                                }
+                                archivoEscritura.close();
+                                std::cout << "Texto guardado en " << archivoSector << std::endl;
+                            } else {
+                                std::cerr << "No se pudo abrir el archivo " << archivoSector << " para escritura." << std::endl;
+                            }
+                        } else {
+                            std::cerr << "El sector no está disponible: " << archivoSector << std::endl;
+                        }
+                    }
+                }
+            }
+        }
+    }
+
     void guardarTextoEnSectores(const std::string &archivoTxt) {
-    // Verificar si el disco existe
-    if (!discoExiste()) {
-        std::cerr << "El disco no existe." << std::endl;
-        return;
+        if (!discoExiste()) {
+            std::cerr << "El disco no existe." << std::endl;
+            return;
+        }
+
+        std::ifstream archivo(archivoTxt);
+        if (!archivo.is_open()) {
+            std::cerr << "Error al abrir el archivo " << archivoTxt << std::endl;
+            return;
+        }
+
+        std::vector<std::string> contenido;
+        std::string linea;
+        while (std::getline(archivo, linea)) {
+            contenido.push_back(linea);
+        }
+        archivo.close();
+
+        int lineas_por_sector = calcularLineasPorSector();
+
+        int sectorIndex = 0;
+        for (int plato = 1; plato <= num_platos; ++plato) {
+            for (int superficie = 1; superficie <= 2; ++superficie) {
+                for (int pista = 1; pista <= num_pist; ++pista) {
+                    for (int sector = 1; sector <= sectoresPorPista; ++sector) {
+                        std::string archivoSector = "discoDuro/plato_" + std::to_string(plato) + "/superficie_" + std::to_string(superficie) + "/pista_" + std::to_string(pista) + "/sector_" + std::to_string(sector) + ".txt";
+
+                        if (sectorDisponible(archivoSector)) {
+                            std::ofstream archivoEscritura(archivoSector);
+                            if (archivoEscritura.is_open()) {
+                                int lineasEscritas = 0;
+                                while (sectorIndex < contenido.size() && lineasEscritas < lineas_por_sector) {
+                                    archivoEscritura << contenido[sectorIndex] << std::endl;
+                                    ++lineasEscritas;
+                                    ++sectorIndex;
+                                }
+                                archivoEscritura.close();
+                                std::cout << "Texto guardado en " << archivoSector << std::endl;
+                            } else {
+                                std::cerr << "No se pudo abrir el archivo " << archivoSector << " para escritura." << std::endl;
+                            }
+                        } else {
+                            std::cerr << "El sector no está disponible: " << archivoSector << std::endl;
+                        }
+                    }
+                }
+            }
+        }
     }
 
-    std::ifstream archivo(archivoTxt);
-    if (!archivo.is_open()) {
-        std::cerr << "Error al abrir el archivo " << archivoTxt << std::endl;
-        return;
+    bool leerSector(const std::string &sector, std::string &contenido) {
+        std::ifstream archivo(sector);
+        if (archivo.is_open()) {
+            std::stringstream buffer;
+            buffer << archivo.rdbuf();
+            contenido = buffer.str();
+            archivo.close();
+            return true;
+        }
+        return false;
     }
 
-    // Vector para almacenar el contenido del archivo
-    std::vector<std::string> contenido;
-
-    // Leer el archivo línea por línea y almacenar cada línea en el vector
-    std::string linea;
-    while (std::getline(archivo, linea)) {
-        contenido.push_back(linea);
+    void leerSectorDinamico() {
+        int PlatoAmostrar, SuperficieAMostrar, PistaaMostrar, SectorAmostrar;
+        cout << "Plato: ";
+        cin >> PlatoAmostrar;
+        cout << "Superficie: ";
+        cin >> SuperficieAMostrar;
+        cout << "Pista: ";
+        cin >> PistaaMostrar;
+        cout << "Sector: ";
+        cin >> SectorAmostrar;
+        string sectorALeer = "discoDuro/plato_" + to_string(PlatoAmostrar) + "/superficie_" + to_string(SuperficieAMostrar) + "/pista_" + to_string(PistaaMostrar) + "/sector_" + to_string(SectorAmostrar) + ".txt";
+        string contenido;
+        if (leerSector(sectorALeer, contenido)) {
+            cout << "Contenido del sector P: " << PlatoAmostrar << " S: " << SuperficieAMostrar << " P: " << PistaaMostrar << " Se: " << SectorAmostrar << ":" << endl;
+            cout << contenido << endl;
+        } else {
+            cout << "No se pudo leer el sector " << PlatoAmostrar << " S: " << SuperficieAMostrar << " P: " << PistaaMostrar << " Se: " << SectorAmostrar << endl;
+        }
     }
-    archivo.close();
 
-    // Calcular el número máximo de líneas que pueden caber en un sector
-    //int lineas_por_sector = calcularLineasPorSector(lineasporsector);
-      int lineas_por_sector=calcularLineasPorSector();
-    // Iterar sobre los sectores existentes y escribir el contenido del archivo en ellos
-    int sectorIndex = 0; // Índice para rastrear en qué sector estamos escribiendo
+    void capacidad() {
+        int capacidad = num_platos * 2 * num_pist * sectoresPorPista * tam_sect;
+        cout << "Capacidad del disco:  " << capacidad << " bytes" << endl;
+    }
+
+    void crearBloques() {
     for (int plato = 1; plato <= num_platos; ++plato) {
         for (int superficie = 1; superficie <= 2; ++superficie) {
             for (int pista = 1; pista <= num_pist; ++pista) {
-                for (int sector = 1; sector <= sectoresPorPista; ++sector) {
-                    std::string archivoSector = "discoDuro/plato_" + std::to_string(plato) + "/superficie_" + std::to_string(superficie) + "/pista_" + std::to_string(pista) + "/sector_" + std::to_string(sector) + ".txt";
+                // Ruta base del bloque y carpeta de la pista
+                string rutaBase = "discoDuro/plato_" + to_string(plato) + "/superficie_" + to_string(superficie);
+                string carpetaPista = rutaBase + "/pista_" + to_string(pista);
 
-                    // Verificar si el sector está disponible
-                    if (sectorDisponible(archivoSector)) {
-                        // Abrir el archivo en modo de escritura
-                        std::ofstream archivoEscritura(archivoSector);
-                        if (archivoEscritura.is_open()) {
-                            // Escribir el contenido del archivo en el sector
-                            int lineasEscritas = 0;
-                            while (sectorIndex < contenido.size() && lineasEscritas < lineas_por_sector) {
-                                archivoEscritura << contenido[sectorIndex] << std::endl;
-                                ++lineasEscritas;
-                                ++sectorIndex;
+                // Iterar sobre los sectores por bloque
+                for (int sector = 1; sector <= sectoresPorPista; sector += sectoresporbloque) {
+                    // Número de bloque actual
+                    int numBloque = (sector - 1) / sectoresporbloque + 1;
+
+                    // Nombre del archivo del bloque
+                    string archivoBloque = carpetaPista + "/bloque_" + to_string(numBloque) + ".txt";
+
+                    ofstream archivo(archivoBloque);
+                    if (archivo.is_open()) {
+                        archivo << "Plato: " << plato << " Superficie: " << superficie << " Pista: " << pista << " bloque " << numBloque << "\n";
+                        archivo << "===================\n";
+
+                        // Iterar sobre los sectores del bloque
+                        for (int i = 0; i < sectoresporbloque; ++i) {
+                            int sectorActual = sector + i;
+                            if (sectorActual <= sectoresPorPista) {
+                                // Ruta del archivo del sector
+                                string archivoSector = carpetaPista + "/sector_" + to_string(sectorActual) + ".txt";
+                                string contenido;
+                                if (leerSector(archivoSector, contenido)) {
+                                    archivo << "Plato: " << plato << " Superficie: " << superficie << " Pista: " << pista << " Sector: " << sectorActual << " --\n";
+                                    archivo << contenido << "\n";
+                                } else {
+                                    archivo << "Plato: " << plato << " Superficie: " << superficie << " Pista: " << pista << " Sector: " << sectorActual << " --\n";
+                                    archivo << "Sector vacío\n";
+                                }
+                                archivo << "-------------------\n";
                             }
-                            archivoEscritura.close();
-                            std::cout << "Texto guardado en " << archivoSector << std::endl;
-                        } else {
-                            std::cerr << "No se pudo abrir el archivo " << archivoSector << " para escritura." << std::endl;
                         }
+                        archivo.close();
+                        cout << "Bloque creado: " << archivoBloque << endl;
                     } else {
-                        std::cerr << "El sector no está disponible: " << archivoSector << std::endl;
+                        cerr << "No se pudo crear el archivo del bloque: " << archivoBloque << endl;
                     }
                 }
             }
         }
     }
 }
-bool leerSector(const std::string& sector, std::string& contenido) {
-    std::ifstream archivo(sector);
-    if (archivo.is_open()) {
-        std::stringstream buffer;
-        buffer << archivo.rdbuf();
-        contenido = buffer.str();
-        archivo.close();
-        return true;
-    }
-    return false;
-}
-void leerSectorDinamico() {
-    int PlatoAmostrar, SuperficieAMostrar, PistaaMostrar, SectorAmostrar;
-    cout << "Plato: ";
-    cin >> PlatoAmostrar;
-    cout << "Superficie: ";
-    cin >> SuperficieAMostrar;
-    cout << "Pista: ";
-    cin >> PistaaMostrar;
-    cout << "Sector: ";
-    cin >> SectorAmostrar;
-    string sectorALeer = "discoDuro/plato_" + to_string(PlatoAmostrar) + "/superficie_" + to_string(SuperficieAMostrar) + "/pista_" + to_string(PistaaMostrar) + "/sector_" + to_string(SectorAmostrar) + ".txt";
-    string contenido;
-    if (leerSector(sectorALeer, contenido)) {
-        cout << "Contenido del sector P: " << PlatoAmostrar << " S: " << SuperficieAMostrar << " P: " << PistaaMostrar << " Se: " << SectorAmostrar << ":" << endl;
-        cout << contenido << endl;
-    } else {
-        cout << "No se pudo leer el sector " << PlatoAmostrar << " S: " << SuperficieAMostrar << " P: " << PistaaMostrar << " Se: " << SectorAmostrar << endl;
-    }
-}
-    void capacidad(){
-        int capacidad=num_platos*2*num_pist*sectoresPorPista*tam_sect;
-        cout<<"Capacidad del disco:  "<<capacidad<<"bytes"<<endl;   
-    }
-    void InsertarRegistro(string insertar){
-        
-
-    }
-    void crearBloque(int tamaño_bloque,int tam_sect){
-        int sectores_bloque=tamaño_bloque/tam_sect;
-        for (int plato = 1; plato <= num_platos; ++plato) {
-            for (int superficie = 1; superficie <= 2; ++superficie) {
-                for (int pista = 1; pista <= num_pist; ++pista) {
-                    for (int sector = 1; sector <= sectoresPorPista; ++sector) {
-                        string archivoSector = "discoDuro/plato_" + 
-                        to_string(plato) + "/superficie_" + 
-                        to_string(superficie) + "/pista_" + 
-                        to_string(pista) + "/sector_" + 
-                        to_string(sector) + ".txt";
-                }
-            }
-        }
-            }
-    }
-    };
+};
 #endif // DISK_H
 /*
 Comparar por esquema
