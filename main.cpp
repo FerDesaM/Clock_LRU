@@ -2,7 +2,7 @@
 #include "bufferManager.h"
 using namespace std;
 int main() {
-    /*int num_platos, num_pistas, num_sectores, tam_sector;
+    int num_platos, num_pistas, num_sectores, tam_sector;
     bool continuar = true;
 
     do {
@@ -27,11 +27,12 @@ int main() {
         string archivoTxt;
         cout << "Ingrese el nombre del archivo de texto para insertar en los bloques: ";
         cin >> archivoTxt;
+        
         disco.guardarTextoEnBloque(archivoTxt);
 
         // Crear los bloques
         disco.crearBloques();
-
+        disco.mapearDireccionesBloques("map.txt");
         // Opciones adicionales
         int opcion;
         cout << "Seleccione una opción:" << endl;
@@ -68,7 +69,7 @@ int main() {
     } while (continuar);
 
     cout << "Fin del programa." << endl;
-*/
+/*
 BufferManager* bufferManager = nullptr;
 
     int elegirAlgoritmo;
@@ -288,6 +289,6 @@ BufferManager* bufferManager = nullptr;
                 }
             }
         }
-    }
+    }*/
     return 0;
 }

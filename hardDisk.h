@@ -9,6 +9,9 @@
 #include <sstream>
 #include <algorithm>
 
+#include "calcular.h"
+
+
 using namespace std;
 
 struct BlockHeader {
@@ -16,9 +19,11 @@ struct BlockHeader {
     int superficie;
     int pista;
     int sector;
+ 
 };
 
 class Block {
+
 public:
     BlockHeader header;
     vector<string> sectores;
@@ -59,7 +64,54 @@ public:
             sectores[index] = "";
         }
     }
+
+
+
 };
+
+
+
+class Bloque {
+private:
+    int Tamanio;
+    std::string direccion;
+
+public:
+    void establecerTamanio(int Tamanio) {
+        this->Tamanio = Tamanio;
+    }
+
+    int tamanio() const {
+        return this->Tamanio;
+    }
+
+    void establecerDireccion(const std::string& direccion) {
+        this->direccion += direccion + "\n";
+    }
+
+    void RestarTamanio(int tamanio) {
+        this->Tamanio -= tamanio;
+    }
+
+    std::string imprimirDireccion() const {
+        return direccion;
+    }
+};
+
+void CrearBloques(int sectores, int SectoresTotales, std::vector<Bloque>& bloques, int tamanioXSector) {
+    int sectoresTotales = SectoresTotales;
+    int cantidadBloques = (sectoresTotales + sectores - 1) / sectores; // Redondeo hacia arriba
+
+    bloques.resize(cantidadBloques);
+
+    for (int i = 0; i < cantidadBloques; i++) {
+        bloques[i].establecerTamanio(tamanioXSector * sectores);
+    }
+
+    for (int i = 0; i < cantidadBloques; i++) {
+        std::cout << "bloque: " << i << " tiene " << bloques[i].tamanio() << " espacio" << std::endl;
+    }
+}
 
 class DiscoDuro {
 private:
@@ -68,6 +120,7 @@ private:
     int sectoresPorPista;
     int tam_sect;
     int sectoresporbloque = 4;
+    std::vector<Bloque> bloques;
 
 public:
     DiscoDuro() : num_platos(0), num_pist(0), sectoresPorPista(0), tam_sect(0) {}
@@ -77,6 +130,26 @@ public:
 
     void setNumPlatos(int num) {
         num_platos = num;
+    }
+
+    int obtenerNumPlatos() const {
+        return num_platos;
+    }
+
+    int obtenerNumPist() const {
+        return num_pist;
+    }
+
+    int obtenerSectoresPorPista() const {
+        return sectoresPorPista;
+    }
+
+    int obtenerTamSector() const {
+        return tam_sect;
+    }
+
+    int obtenerSectoresPorBloque() const {
+        return sectoresporbloque;
     }
 
     void setPistasPorSuperficie(int num) {
@@ -95,6 +168,62 @@ public:
         struct stat info;
         return stat("discoDuro", &info) == 0 && S_ISDIR(info.st_mode);
     }
+
+    void CrearBloques3() {
+        int sectoresporbloque;
+        std::cout << "Ingrese la cantidad de sectores por bloque: ";
+        std::cin >> sectoresporbloque;
+
+        int SectoresTotales = num_platos * num_pist * sectoresPorPista * 2;
+        ::CrearBloques(sectoresporbloque, SectoresTotales, bloques, obtenerTamSector());
+    }
+
+    void guardarContenidoBloque() {
+        std::string archivoTxt = "titanic.txt";
+        std::string archivoEsquema = "esquemas.txt";
+        std::string tableName = "nombreTabla"; // Cambia esto al nombre de tu tabla
+
+        // Obtener esquema
+        std::string esquema = getSchema(archivoEsquema, "titanic");
+
+        if (esquema.empty()) {
+            std::cout << "No se encontró el esquema para la tabla " << tableName << std::endl;
+            return;
+        }
+
+        // Calcular tamaño de línea
+        int tamanioLinea = calcularTamanioFijoLinea(esquema);
+
+        // Leer archivo de registros
+        std::ifstream archivo(archivoTxt);
+        if (!archivo.is_open()) {
+            std::cout << "No se pudo abrir el archivo " << archivoTxt << std::endl;
+            return;
+        }
+
+        std::string linea;
+        int bloqueActual = 0;
+
+        while (getline(archivo, linea)) {
+            if (bloques[bloqueActual].tamanio() < tamanioLinea) {
+                bloqueActual++;
+                if (bloqueActual >= bloques.size()) {
+                    std::cout << "No hay más bloques disponibles" << std::endl;
+                    break;
+                }
+            }
+            bloques[bloqueActual].establecerDireccion(linea);
+            bloques[bloqueActual].RestarTamanio(tamanioLinea);
+        }
+
+        archivo.close();
+
+        // Mostrar el contenido de los bloques
+        for (int i = 0; i < bloques.size(); i++) {
+            std::cout << "Bloque " << i << " contiene:\n" << bloques[i].imprimirDireccion() << std::endl;
+        }
+    }
+
 
     void crearEstructuraDisco() {
         string carpeta = "discoDuro";
@@ -203,58 +332,7 @@ public:
             }
         }
     }
-
-    void guardarTextoEnSectores(const std::string &archivoTxt) {
-        if (!discoExiste()) {
-            std::cerr << "El disco no existe." << std::endl;
-            return;
-        }
-
-        std::ifstream archivo(archivoTxt);
-        if (!archivo.is_open()) {
-            std::cerr << "Error al abrir el archivo " << archivoTxt << std::endl;
-            return;
-        }
-
-        std::vector<std::string> contenido;
-        std::string linea;
-        while (std::getline(archivo, linea)) {
-            contenido.push_back(linea);
-        }
-        archivo.close();
-
-        int lineas_por_sector = calcularLineasPorSector();
-
-        int sectorIndex = 0;
-        for (int plato = 1; plato <= num_platos; ++plato) {
-            for (int superficie = 1; superficie <= 2; ++superficie) {
-                for (int pista = 1; pista <= num_pist; ++pista) {
-                    for (int sector = 1; sector <= sectoresPorPista; ++sector) {
-                        std::string archivoSector = "discoDuro/plato_" + std::to_string(plato) + "/superficie_" + std::to_string(superficie) + "/pista_" + std::to_string(pista) + "/sector_" + std::to_string(sector) + ".txt";
-
-                        if (sectorDisponible(archivoSector)) {
-                            std::ofstream archivoEscritura(archivoSector);
-                            if (archivoEscritura.is_open()) {
-                                int lineasEscritas = 0;
-                                while (sectorIndex < contenido.size() && lineasEscritas < lineas_por_sector) {
-                                    archivoEscritura << contenido[sectorIndex] << std::endl;
-                                    ++lineasEscritas;
-                                    ++sectorIndex;
-                                }
-                                archivoEscritura.close();
-                                std::cout << "Texto guardado en " << archivoSector << std::endl;
-                            } else {
-                                std::cerr << "No se pudo abrir el archivo " << archivoSector << " para escritura." << std::endl;
-                            }
-                        } else {
-                            std::cerr << "El sector no está disponible: " << archivoSector << std::endl;
-                        }
-                    }
-                }
-            }
-        }
-    }
-
+    
     bool leerSector(const std::string &sector, std::string &contenido) {
         std::ifstream archivo(sector);
         if (archivo.is_open()) {
@@ -290,6 +368,14 @@ public:
     void capacidad() {
         int capacidad = num_platos * 2 * num_pist * sectoresPorPista * tam_sect;
         cout << "Capacidad del disco:  " << capacidad << " bytes" << endl;
+    }
+
+    int CantidadSectores(){
+        return num_platos * 2 * num_pist * sectoresPorPista;
+    }
+
+    int tamanioSector(){
+        return tam_sect;
     }
 
     void crearBloques() {
@@ -340,7 +426,48 @@ public:
         }
     }
 }
+
+
+void mapearDireccionesBloques(const string& archivoSalida) {
+        ofstream archivo(archivoSalida);
+        if (!archivo.is_open()) {
+            cerr << "No se pudo abrir el archivo " << archivoSalida << " para escritura." << endl;
+            return;
+        }
+
+        for (int plato = 1; plato <= num_platos; ++plato) {
+            for (int superficie = 1; superficie <= 2; ++superficie) {
+                for (int pista = 1; pista <= num_pist; ++pista) {
+                    string carpetaPista = "discoDuro/plato_" + to_string(plato) + "/superficie_" + to_string(superficie) + "/pista_" + to_string(pista);
+
+                    for (int sector = 1; sector <= sectoresPorPista; sector += sectoresporbloque) {
+                        int numBloque = (sector - 1) / sectoresporbloque + 1;
+                        string archivoBloque = carpetaPista + "/bloque_" + to_string(numBloque) + ".txt";
+
+                        // Escribir la dirección del bloque en el archivo de salida
+                        archivo << "Plato: " << plato << " Superficie: " << superficie << " Pista: " << pista << " Bloque: " << numBloque << " -> " << archivoBloque << endl;
+                    }
+                }
+            }
+        }
+
+        archivo.close();
+        cout << "Se ha creado el archivo de mapeo de direcciones de bloques: " << archivoSalida << endl;
+    }
 };
+
+
+
+
+
+class heapFIle{
+    public:
+        void direcion(int nroBloque, DiscoDuro discoDuro){
+
+        }
+};
+
+
 #endif // DISK_H
 /*
 Comparar por esquema
