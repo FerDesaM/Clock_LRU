@@ -1,7 +1,7 @@
 #include "hardDisk.h"
 #include "bufferManager.h"
 #include <iostream>
-
+#include "heapfile.h"
 using namespace std;
 
 int main() {
@@ -47,10 +47,12 @@ int main() {
                     //disco.crearBloques();
                     //disco.mapearDireccionesBloques("map.txt");
 
-
+                    heapFile heap;
                     disco.CrearBloques3();
                     disco.guardarContenidoBloque();
-
+                    std::vector<Bloque>& bloques = disco.obtenerBloques();
+                    heap.almacenarInformacionBloques(bloques);
+                    heap.mostrarInformacionBloques();
                     // Opciones adicionales
                     int opcion;
                     cout << "Seleccione una opción:" << endl;

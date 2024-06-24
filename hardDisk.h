@@ -127,7 +127,7 @@ private:
     int sectoresPorPista;
     int tam_sect;
     int sectoresporbloque = 4;
-
+    std::vector<Bloque> bloques;
 public:
     DiscoDuro() : num_platos(0), num_pist(0), sectoresPorPista(0), tam_sect(0) {}
 
@@ -168,6 +168,9 @@ public:
 
     void setBytesPorSector(int num) {
         tam_sect = num;
+    }
+     std::vector<Bloque>& obtenerBloques() {
+        return bloques;
     }
 
     bool discoExiste() {
