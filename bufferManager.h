@@ -349,13 +349,23 @@ public:
                                             // Ingresar datos según el esquema
                                             string registroNuevo;
                                             ingresarDatosSegunEsquema(esquema, registroNuevo);
+
+                                            int tamanioRegistro2 = calcularTamanioFijoLinea(esquema);    
+
+                                            bloques[numPagina - 1].RestarTamanio(tamanioRegistro2);    // se resta el tamaño del registro como si fuera longitud fija
+
                                             int tamanioRegistro = calcularTamanioLineaVariable(registroNuevo, esquema);
 
                                             cout << "El nuevo registro es: " << registroNuevo << endl;
-                                            if(bloques[numPagina - 1].tamanio() - tamanioRegistro >= 0){
+
+
+
+                                            if(bloques[numPagina - 1].tamanio() - tamanioRegistro <= tamanioMaximo){
+                                                int registro;
+                                                cout << "que registro desea modificar: "; cin >> registro;
                                                 int frame = pageTable.obtenerFrameId(numPagina);
                                                 cout << "frame" << numPagina << endl;
-                                                bufferPool.insertarTextoEnPagina(frame, registroNuevo);
+                                                bufferPool.modificarRegistro(registro, registroNuevo, bloques[numPagina - 1].imprimirDireccion(), frame);
                                                 bloques[numPagina - 1].RestarTamanio(tamanioRegistro);
                                                 break;
                                             }
@@ -372,12 +382,18 @@ public:
                                 archivoEsquemas.close();
                             }
 
-
-                        
-
                             break;
                         
-                        default:
+                      
+                        
+                        
+                        case 3:
+                            int registro;
+                            cout << "ingrese numero de registro: "; cin >> registro;
+                            int frame = pageTable.obtenerFrameId(numPagina);
+
+                            //bufferPool.eliminarRegistro(registro, bloques[numPagina - 1].imprimirDireccion(), frame);
+
                             break;
                         }
 

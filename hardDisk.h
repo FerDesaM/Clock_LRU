@@ -11,6 +11,8 @@
 
 #include "calcular.h"
 
+int tamanioMaximo;
+
 
 using namespace std;
 
@@ -103,7 +105,9 @@ void CrearBloques(int sectores, int SectoresTotales, std::vector<Bloque>& bloque
     int cantidadBloques = (sectoresTotales + sectores - 1) / sectores; // Redondeo hacia arriba
 
     bloques.resize(cantidadBloques);
-
+    
+    tamanioMaximo = tamanioXSector * sectores;
+    
     for (int i = 0; i < cantidadBloques; i++) {
         bloques[i].establecerTamanio(tamanioXSector * sectores);
     }

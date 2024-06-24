@@ -120,6 +120,40 @@ public:
 
     }
 
+    void eliminarRegistro(int numero_registro, std::string& registros, int frame) {
+        std::string registrosActualizados = registros;
+        std::stringstream ss(registrosActualizados);
+        std::string linea;
+        std::stringstream nuevos_registros;
+
+        bool encontrado = false;
+        while (std::getline(ss, linea, '\n')) {
+            // Obtener el número de registro del inicio de la línea
+            size_t pos = linea.find('#');
+            if (pos != std::string::npos) {
+                int num_registro = std::stoi(linea.substr(0, pos));
+                if (num_registro == numero_registro) {
+                    encontrado = true;
+                    std::cout << "Registro eliminado exitosamente." << std::endl;
+                } else {
+                    nuevos_registros << linea << "\n";
+                }
+            } else {
+                nuevos_registros << linea << "\n";  // Conservar líneas que no siguen el formato esperado
+            }
+        }
+
+        if (!encontrado) {
+            std::cout << "Registro no encontrado." << std::endl;
+        }
+
+        // Actualizar la cadena de registros
+        registrosActualizados = nuevos_registros.str();
+
+        reemplazarContenido(frame, registrosActualizados);
+        
+    }
+
 
     
     
