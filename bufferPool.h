@@ -19,7 +19,17 @@ public:
         }
     }
 
-    void mostrarContenidoFrame(int numero_frame) {
+    void cargarPaginaAlFrame2(size_t numero_frame, const std::string& contenido) {
+        if (numero_frame < frames.size()) {
+            frames[numero_frame].agregarPaginaConContenido(contenido);
+        } else {
+            std::cout << "Número de frame inválido." << std::endl;
+        }
+    } 
+
+    
+
+    void mostrarContenidoFrame2(int numero_frame) {
         if (numero_frame >= 0 && numero_frame < frames.size()) {
             std::cout << "Contenido del Frame " << numero_frame << ":" << std::endl;
             frames[numero_frame].mostrarPagina();
@@ -50,11 +60,8 @@ public:
         }
     }
 
-    void insertarTextoEnPagina(size_t numero_frame) {
+    void insertarTextoEnPagina(size_t numero_frame, string texto) {
         if (numero_frame < frames.size()) {
-            std::string texto;
-            std::cout << "Ingrese el texto que desea insertar en el frame " << numero_frame << ": ";
-            cin >> texto; // Leer texto desde la entrada estándar
 
             frames[numero_frame].insertarTexto(texto);
         } else {
@@ -62,12 +69,59 @@ public:
         }
     }
 
-    void GuardarBloque(int numero_pagina, int frame){
+    /* void GuardarBloque(int numero_pagina, int frame){
         std::string nombre_archivo = "bloque_" + std::to_string(numero_pagina) + ".txt";
         std::string ruta = "Bloques/" + nombre_archivo;
 
         frames[frame].GuardarBloque(ruta);
+    } */
+
+    void reemplazarContenido(size_t numero_frame, const std::string& nuevo_contenido) {
+        if (numero_frame < frames.size()) {
+            frames[numero_frame].reemplazarContenido(nuevo_contenido);
+        } else {
+            std::cout << "Número de frame inválido." << std::endl;
+        }
     }
+
+    void modificarRegistro(int numero_registro, const std::string& nuevo_contenido, string registros, int frame) {
+        string RegistroNuevo = registros;
+        std::stringstream ss(RegistroNuevo);
+        std::string linea;
+        std::stringstream nuevos_registros;
+
+        bool encontrado = false;
+        while (std::getline(ss, linea, '\n')) {
+            // Obtener el número de registro del inicio de la línea
+            size_t pos = linea.find('#');
+            if (pos != std::string::npos) {
+                int num_registro = std::stoi(linea.substr(0, pos));
+                if (num_registro == numero_registro) {
+                    // Reemplazar el registro completo por el nuevo contenido
+                    nuevos_registros << nuevo_contenido << "\n";
+                    encontrado = true;
+                    std::cout << "Registro modificado exitosamente." << std::endl;
+                } else {
+                    nuevos_registros << linea << "\n";
+                }
+            } else {
+                nuevos_registros << linea << "\n";  // Conservar líneas que no siguen el formato esperado
+            }
+        }
+
+        if (!encontrado) {
+            std::cout << "Registro no encontrado." << std::endl;
+        }
+
+        // Actualizar la cadena de registros
+        RegistroNuevo = nuevos_registros.str();
+
+        reemplazarContenido(frame, RegistroNuevo);
+
+    }
+
+
+    
     
 
 };

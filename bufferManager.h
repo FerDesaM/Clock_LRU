@@ -1,4 +1,8 @@
 #include "pageTable.h"
+#include "hardDisk.h"
+#include "calcular.h"
+
+
 class BufferManager {
 private:
     BufferPool bufferPool;
@@ -7,15 +11,7 @@ private:
 
 public:
     
-    BufferManager(size_t num_frames) : bufferPool(num_frames) {
-        // Asignar números de página a archivos
-        for (int i = 1; i <= 16; ++i) {
-            std::string nombre_archivo = "bloque_" + std::to_string(i) + ".txt";
-            std::string ruta = "Bloques/" + nombre_archivo;
-            archivo_a_numero[ruta] = i;
-        }
-
-    }
+    BufferManager(size_t num_frames) : bufferPool(num_frames) {}
     
     std::string obtenerNombreArchivo(int numPagina) {
         // Buscar el nombre del archivo correspondiente al número de página
@@ -35,6 +31,13 @@ public:
     
     
     void consultarPagina(int numPagina) {
+        
+        if(numPagina - 1 < 0 || numPagina - 1 >= bloques.size()){
+            cout << "fuera de limites de los bloques" << endl;
+            return;
+        }
+
+
         if (pageTable.verificarExistenciaDePagina(numPagina)) {
             pageTable.aumentarPinCount(numPagina);
             return;
@@ -44,7 +47,7 @@ public:
         if (frame_num == bufferPool.getNumFrames()) {
             // No hay marcos vacíos, es necesario reemplazarlos
             pageTable.replaceReloj(bufferPool.getNumFrames(), numPagina);
-            string nombre_archivo = obtenerNombreArchivo(numPagina);
+            string nombre_archivo = obtenerNombreArchivo(numPagina); // cambiar
 
             int numeroFrameReloj = pageTable.getManecilla() - 1;
 
@@ -53,13 +56,13 @@ public:
             }
 
 
-            bufferPool.cargarPaginaAlFrame(numeroFrameReloj, nombre_archivo);
+            bufferPool.cargarPaginaAlFrame2(numeroFrameReloj, bloques[numPagina - 1].imprimirDireccion()); // cambiar
             pageTable.aumentarPinCount(numPagina);
 
         } else {
             // Hay un marco vacío, carga la página en ese marco
-            string nombre_archivo = obtenerNombreArchivo(numPagina);
-            bufferPool.cargarPaginaAlFrame(frame_num, nombre_archivo);
+            string nombre_archivo = obtenerNombreArchivo(numPagina);     
+            bufferPool.cargarPaginaAlFrame2(frame_num, bloques[numPagina - 1].imprimirDireccion());   // cambiar 
             pageTable.agregarEntrada(frame_num, numPagina);
             pageTable.incrementaBirtyBit(numPagina);
             pageTable.aumentarPinCount(numPagina);
@@ -134,11 +137,11 @@ public:
                     numeroFrameReloj = bufferPool.getNumFrames() - 1;
                 }
 
-                bufferPool.cargarPaginaAlFrame(numeroFrameReloj, nombre_archivo);
+                bufferPool.cargarPaginaAlFrame2(numeroFrameReloj, bloques[numPagina - 1].imprimirDireccion()); // cambiar
             } else {
                 // Hay un marco vacío, carga la página en ese marco
                 string nombre_archivo = obtenerNombreArchivo(numPagina);
-                bufferPool.cargarPaginaAlFrame(frame_num, nombre_archivo);
+                bufferPool.cargarPaginaAlFrame2(frame_num, bloques[numPagina - 1].imprimirDireccion()); // cambiar
                 pageTable.agregarEntrada(frame_num, numPagina);
                 pageTable.incrementaBirtyBit(numPagina);
                 pageTable.aumentarManecilla(bufferPool.getNumFrames());
@@ -165,13 +168,221 @@ public:
             case 1: // Lectura
                 if(pageTable.isDirty(numPagina) == true){
                     cout << "Error en el proceso de requerimineto , el dity bit es 1" << endl;
-                    cout << "Para procesar el proceso se debe guardar el archivo" << endl;
-                    cout << "1. Guardar contenido" << endl;
-                    cout << "2. No guardar contenido" << endl;
+                    cout << "Para procesar el proceso se debe MODIFICAR LA PAGINA" << endl;
+                    cout << "1. MODIFICAR PAGINA" << endl;
+                    cout << "2. NO MODIFICAR PAGINA" << endl;
                     cout << "opcion : ";
                     int opcion;
                     cin >> opcion;
                     if(opcion == 1){
+                        int opcion2;
+                        cout << "1. si desea insertar un nuevo registro" << endl;
+                        cout << "2. si desea modificar un registro" << endl;
+                        cout << "3. si desea eliminar un registro" << endl;
+                        cout << "opcion: "; cin >> opcion2;
+
+                        switch (opcion2)
+                        {
+                        case 1:
+                            int opcion3;
+                            cout << "1. si desea insertar el rigistro con longitud fija" << endl;
+                            cout << "2. si desea insertar el rigistro con longitud variable" << endl;
+                            cout << "opcion: "; cin >> opcion3;
+                            if (opcion3 == 1) {
+                                ifstream archivoEsquemas("esquemas.txt");
+                                if (!archivoEsquemas.is_open()) {
+                                    cerr << "No se pudo abrir el archivo esquemas.txt" << endl;
+                                    return;
+                                }
+
+                                string lineaEsquema;
+                                while (getline(archivoEsquemas, lineaEsquema)) {
+                                    // Aquí podrías agregar lógica para elegir un esquema específico
+                                    // Por simplicidad, usaremos el primer esquema que encontremos
+                                    if (lineaEsquema.find("titanic#") != string::npos) {
+                                        // Ignorar la parte del nombre del esquema
+                                        size_t pos = lineaEsquema.find('#');
+                                        if (pos != string::npos) {
+                                            string esquema = lineaEsquema.substr(pos + 1);
+                                            int tamanioRegistro = calcularTamanioFijoLinea(esquema);
+                                            cout << "El tamaño del nuevo registro es: " << tamanioRegistro << " bytes" << endl;
+                                            
+                                            // Ingresar datos según el esquema
+                                            string registroNuevo;
+                                            ingresarDatosSegunEsquema(esquema, registroNuevo);
+                                            cout << "El nuevo registro es: " << registroNuevo << endl;
+                                            if(bloques[numPagina - 1].tamanio() - tamanioRegistro >= 0){
+                                                int frame = pageTable.obtenerFrameId(numPagina);
+                                                cout << "frame" << numPagina << endl;
+                                                bufferPool.insertarTextoEnPagina(frame, registroNuevo);
+                                                bloques[numPagina - 1].RestarTamanio(tamanioRegistro);
+                                                break;
+                                            }
+                                            else{
+                                                cout << "la pagina no tiene suficiente espacio" << endl;
+                                                break;
+                                            }
+
+                                        }
+                                        break;
+                                    }
+                                }
+
+                                archivoEsquemas.close();
+                            }
+                            else if(opcion3 == 2){
+                                 ifstream archivoEsquemas("esquemas.txt");
+                                if (!archivoEsquemas.is_open()) {
+                                    cerr << "No se pudo abrir el archivo esquemas.txt" << endl;
+                                    return;
+                                }
+
+                                string lineaEsquema;
+                                while (getline(archivoEsquemas, lineaEsquema)) {
+                                    // Aquí podrías agregar lógica para elegir un esquema específico
+                                    // Por simplicidad, usaremos el primer esquema que encontremos
+                                    if (lineaEsquema.find("titanic#") != string::npos) {
+                                        // Ignorar la parte del nombre del esquema
+                                        size_t pos = lineaEsquema.find('#');
+                                        if (pos != string::npos) {
+                                            string esquema = lineaEsquema.substr(pos + 1);
+                                            //int tamanioRegistro = calcularTamanioFijoLinea(esquema);
+                                            //cout << "El tamaño del nuevo registro es: " << tamanioRegistro << " bytes" << endl;
+                                            
+                                            // Ingresar datos según el esquema
+                                            string registroNuevo;
+                                            ingresarDatosSegunEsquema(esquema, registroNuevo);
+                                            int tamanioRegistro = calcularTamanioLineaVariable(registroNuevo, esquema);
+
+                                            cout << "El nuevo registro es: " << registroNuevo << endl;
+                                            if(bloques[numPagina - 1].tamanio() - tamanioRegistro >= 0){
+                                                int frame = pageTable.obtenerFrameId(numPagina);
+                                                cout << "frame" << numPagina << endl;
+                                                bufferPool.insertarTextoEnPagina(frame, registroNuevo);
+                                                bloques[numPagina - 1].RestarTamanio(tamanioRegistro);
+                                                break;
+                                            }
+                                            else{
+                                                cout << "la pagina no tiene suficiente espacio" << endl;
+                                                break;
+                                            }
+
+                                        }
+                                        break;
+                                    }
+                                }
+
+                                archivoEsquemas.close();
+                            }
+
+                            break;
+                        
+                        case 2:
+                            cout << "modificar registro" << endl;
+                            cout << bloques[numPagina - 1].imprimirDireccion();
+                            cout << "1. si desea insertar el rigistro con longitud fija" << endl;
+                            cout << "2. si desea insertar el rigistro con longitud variable" << endl;
+                            cout << "opcion: "; cin >> opcion3;
+                            if (opcion3 == 1) {
+                                ifstream archivoEsquemas("esquemas.txt");
+                                if (!archivoEsquemas.is_open()) {
+                                    cerr << "No se pudo abrir el archivo esquemas.txt" << endl;
+                                    return;
+                                }
+
+                                string lineaEsquema;
+                                while (getline(archivoEsquemas, lineaEsquema)) {
+                                    // Aquí podrías agregar lógica para elegir un esquema específico
+                                    // Por simplicidad, usaremos el primer esquema que encontremos
+                                    if (lineaEsquema.find("titanic#") != string::npos) {
+                                        // Ignorar la parte del nombre del esquema
+                                        size_t pos = lineaEsquema.find('#');
+                                        if (pos != string::npos) {
+                                            string esquema = lineaEsquema.substr(pos + 1);
+                                            int tamanioRegistro = calcularTamanioFijoLinea(esquema);
+                                            cout << "El tamaño del nuevo registro es: " << tamanioRegistro << " bytes" << endl;
+                                            
+                                            // Ingresar datos según el esquema
+                                            string registroNuevo;
+                                            ingresarDatosSegunEsquema(esquema, registroNuevo);
+                                            cout << "El nuevo registro es: " << registroNuevo << endl;
+                                            if(bloques[numPagina - 1].tamanio() >= 0){
+                                                int frame = pageTable.obtenerFrameId(numPagina);
+                                                cout << "frame" << numPagina << endl;
+                                                int registro;
+                                                cout << "que registro desea modificar: "; cin >> registro;
+
+                                                bufferPool.modificarRegistro(registro, registroNuevo, bloques[numPagina - 1].imprimirDireccion(), frame);
+                                                break;
+                                            }
+                                            else{
+                                                cout << "no hay ningun contenido en la pagina para modififcar" << endl;
+                                                break;
+                                            }
+
+                                        }
+                                        break;
+                                    }
+                                }
+
+                                archivoEsquemas.close();
+                            }
+                            else if(opcion3 == 2){
+                                 ifstream archivoEsquemas("esquemas.txt");
+                                if (!archivoEsquemas.is_open()) {
+                                    cerr << "No se pudo abrir el archivo esquemas.txt" << endl;
+                                    return;
+                                }
+
+                                string lineaEsquema;
+                                while (getline(archivoEsquemas, lineaEsquema)) {
+                                    // Aquí podrías agregar lógica para elegir un esquema específico
+                                    // Por simplicidad, usaremos el primer esquema que encontremos
+                                    if (lineaEsquema.find("titanic#") != string::npos) {
+                                        // Ignorar la parte del nombre del esquema
+                                        size_t pos = lineaEsquema.find('#');
+                                        if (pos != string::npos) {
+                                            string esquema = lineaEsquema.substr(pos + 1);
+                                            //int tamanioRegistro = calcularTamanioFijoLinea(esquema);
+                                            //cout << "El tamaño del nuevo registro es: " << tamanioRegistro << " bytes" << endl;
+                                            
+                                            // Ingresar datos según el esquema
+                                            string registroNuevo;
+                                            ingresarDatosSegunEsquema(esquema, registroNuevo);
+                                            int tamanioRegistro = calcularTamanioLineaVariable(registroNuevo, esquema);
+
+                                            cout << "El nuevo registro es: " << registroNuevo << endl;
+                                            if(bloques[numPagina - 1].tamanio() - tamanioRegistro >= 0){
+                                                int frame = pageTable.obtenerFrameId(numPagina);
+                                                cout << "frame" << numPagina << endl;
+                                                bufferPool.insertarTextoEnPagina(frame, registroNuevo);
+                                                bloques[numPagina - 1].RestarTamanio(tamanioRegistro);
+                                                break;
+                                            }
+                                            else{
+                                                cout << "la pagina no tiene suficiente espacio" << endl;
+                                                break;
+                                            }
+
+                                        }
+                                        break;
+                                    }
+                                }
+
+                                archivoEsquemas.close();
+                            }
+
+
+                        
+
+                            break;
+                        
+                        default:
+                            break;
+                        }
+
+
+
                         cout << "El contenido de la pagina ha sido guardado" << endl;
                         pageTable.aumentarPinCount(numPagina);
                         pageTable.DecrementarDirty(numPagina);
@@ -188,7 +399,7 @@ public:
                     pageTable.aumentarPinCount(numPagina);
                 }
                 break;
-            case 2: // Escritura
+            case 2: // Escritura  dirti bit 0
                 cout << "Realizando operación de escritura en la página " << numPagina << "." << endl;
                 // Marcar la página como modificada (Dirty Bit)
                 pageTable.AumentarDirty(numPagina);
@@ -240,7 +451,7 @@ public:
         cout << pageTable.entries[pagina].DirtyBit << endl;
 
         if(pageTable.entries[pagina].DirtyBit == 1){
-            bufferPool.insertarTextoEnPagina(pagina);
+            //bufferPool.insertarTextoEnPagina(pagina);
             pageTable.DecrementarDirty(pagina);
             return;
         }
@@ -250,12 +461,12 @@ public:
         
     }
 
-    void GuardarBloque(int pagina){
+    /* void GuardarBloque(int pagina){
       
             bufferPool.GuardarBloque(pagina,pageTable.getNumFrame(pagina));
             pageTable.DecrementarDirty(pagina);
     }
-
+ */
        
 
     void InsertarPinned(int pagina){
@@ -267,7 +478,7 @@ public:
     }
 
     void mostrarContenidoFrame(int numFrame) {
-        bufferPool.mostrarContenidoFrame(numFrame);
+        bufferPool.mostrarContenidoFrame2(numFrame);
     }
 
     void mostrarTablaDePaginas() {
@@ -277,7 +488,7 @@ public:
         pageTable.mostrarTablaLRU();
     }
 
-    void llenarLongitudFija(const string& archivoTxt, const string& esquema) {
+    /* void llenarLongitudFija(const string& archivoTxt, const string& esquema) {
         ifstream inFile(archivoTxt);
         if (!inFile.is_open()) {
             cerr << "Error al abrir el archivo de registros" << endl;
@@ -334,9 +545,9 @@ public:
 
             outFile.close();
         }
-    }
+    } */
 
-    void llenarLongitudVariable(const string& archivoTxt, const string& esquema) {
+    /* void llenarLongitudVariable(const string& archivoTxt, const string& esquema) {
         ifstream inFile(archivoTxt);
         if (!inFile.is_open()) {
             cerr << "Error al abrir el archivo de registros" << endl;
@@ -392,5 +603,5 @@ public:
 
             outFile.close();
         }
-    }
+    } */
 };

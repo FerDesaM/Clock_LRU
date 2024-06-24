@@ -7,13 +7,18 @@ private:
 
 public:
     // Constructor con argumentos para cargar el contenido de un archivo
-    Pagina(const std::string& nombre_archivo) {
+    /* Pagina(const std::string& nombre_archivo) {
         ruta = nombre_archivo;
         cargarContenido();
-    }
+    } */
 
     // Constructor sin argumentos para manejar la inicialización de una instancia vacía
     Pagina() {}
+
+
+    Pagina(const std::string& contenido) {
+        this->contenido.push_back(contenido);
+    }
 
     void cargarContenido() {
         std::ifstream archivo(ruta);
@@ -28,7 +33,9 @@ public:
         }
     }
 
-    std::string mostrarContenido() const {
+    
+
+    std::string mostrarContenido2() const {
         std::string contenido_str;
         for (const auto& linea : contenido) {
             contenido_str += linea + "\n";
@@ -51,6 +58,11 @@ public:
         } else {
             std::cerr << "No se pudo abrir el archivo para escritura: " << ruta << std::endl;
         }
+    }
+
+    void reemplazarContenido(const std::string& nuevo_contenido) {
+        contenido.clear(); // Limpiar el contenido actual
+        contenido.push_back(nuevo_contenido); // Agregar el nuevo contenido
     }
     
 };

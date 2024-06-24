@@ -1,0 +1,5 @@
+Plato: 2 Superficie: 2 Pista: 2 bloque 2
+===================
+Plato: 2 Superficie: 2 Pista: 2 Sector: 5 --
+
+-------------------

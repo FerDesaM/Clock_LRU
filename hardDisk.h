@@ -113,6 +113,9 @@ void CrearBloques(int sectores, int SectoresTotales, std::vector<Bloque>& bloque
     }
 }
 
+
+std::vector<Bloque> bloques;
+
 class DiscoDuro {
 private:
     int num_platos;
@@ -120,7 +123,6 @@ private:
     int sectoresPorPista;
     int tam_sect;
     int sectoresporbloque = 4;
-    std::vector<Bloque> bloques;
 
 public:
     DiscoDuro() : num_platos(0), num_pist(0), sectoresPorPista(0), tam_sect(0) {}

@@ -40,16 +40,16 @@ int calcularTamanioLineaVariable(const string& linea, const string& esquema) {
 
         // Interpretar el valor según el tipo de dato del esquema
         if (tipoDato == "INT") {
-            cout << "Tipo de dato: INT, Valor: " << palabra << endl;
+            //cout << "Tipo de dato: INT, Valor: " << palabra << endl;
             tamanioLinea += palabra.length() * 4; // Cada dígito ocupa 4 bytes
         } else if (tipoDato == "STRING") {
-            cout << "Tipo de dato: STRING, Valor: " << palabra << endl;
+            //cout << "Tipo de dato: STRING, Valor: " << palabra << endl;
             tamanioLinea += palabra.length() * sizeof(char); // Cada carácter ocupa 1 byte
         } else if (tipoDato == "FLOAT") {
-            cout << "Tipo de dato: FLOAT, Valor: " << palabra << endl;
+            //cout << "Tipo de dato: FLOAT, Valor: " << palabra << endl;
             tamanioLinea += palabra.length() * 4; // Cada dígito ocupa 4 bytes
         } else if (tipoDato == "CHAR") {
-            cout << "Tipo de dato: CHAR, Valor: " << palabra << endl;
+            //cout << "Tipo de dato: CHAR, Valor: " << palabra << endl;
             tamanioLinea += sizeof(char); // Cada carácter ocupa 1 byte
         } else {
             cout << "Tipo de dato desconocido, ignorando." << endl;
@@ -134,6 +134,30 @@ void calcularTamanioFijoTotal(const string& nombreArchivo, const string& esquema
         cout << "¡Error al abrir el archivo!" << endl;
     }
 }
+
+void ingresarDatosSegunEsquema(const string& esquema, string& registroNuevo) {
+    istringstream ssEsquema(esquema);
+    string columna, tipoDato;
+    vector<string> datos;
+
+    while (getline(ssEsquema, columna, '#') && getline(ssEsquema, tipoDato, '#')) {
+        string valor;
+        cout << "Ingrese " << columna << " (" << tipoDato << "): ";
+        cin >> valor;
+        datos.push_back(valor);
+    }
+
+    // Unir los datos en un solo string con '#' como separador
+    ostringstream ssRegistro;
+    for (size_t i = 0; i < datos.size(); ++i) {
+        if (i != 0) {
+            ssRegistro << "#";
+        }
+        ssRegistro << datos[i];
+    }
+    registroNuevo = ssRegistro.str();
+}
+
 # endif
 /*
 int main() {

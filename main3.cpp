@@ -44,7 +44,7 @@ int main() {
                     //disco.guardarTextoEnBloque(archivoTxt);
 
                     // Crear los bloques
-                    disco.crearBloques();
+                    //disco.crearBloques();
                     //disco.mapearDireccionesBloques("map.txt");
 
 
@@ -182,7 +182,7 @@ int main() {
                                     int pagina;
                                     cout << "Ingrese el número de página: ";
                                     cin >> pagina;
-                                    bufferManager->GuardarBloque(pagina);
+                                    //bufferManager->GuardarBloque(pagina);
                                 }
                                 break;
                             }

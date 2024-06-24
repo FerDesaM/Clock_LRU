@@ -5,7 +5,7 @@ private:
 
 public:
     bool estaVacio() const {
-        return pagina.mostrarContenido().empty();
+        return pagina.mostrarContenido2().empty();
     }
 
     void agregarPagina(const std::string& nombre_archivo) {
@@ -18,10 +18,14 @@ public:
 
     void mostrarPagina() {
         if (!estaVacio()) {
-            std::cout << pagina.mostrarContenido();
+            std::cout << pagina.mostrarContenido2();
         } else {
             std::cout << "El frame está vacío." << std::endl;
         }
+    }
+
+    void agregarPaginaConContenido(const std::string& contenido) {
+        pagina = Pagina(contenido);
     }
 
     void reemplazarPagina(const std::string& nombre_archivo) {
@@ -34,6 +38,10 @@ public:
 
     void GuardarBloque(string ruta){
         pagina.GuardarBloque(ruta);
+    }
+
+    void reemplazarContenido(const std::string& nuevo_contenido) {
+        pagina.reemplazarContenido(nuevo_contenido);
     }
 
 };
