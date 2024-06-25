@@ -38,3 +38,19 @@ bool hayEscrituraPendiente(int pagina) {
 
     return escrituraPendiente;
 }
+
+void imprimirCola(queue<Requerimiento> cola) {
+    cout << "Contenido de la cola Requerimientos:" << endl;
+
+    // Creamos una copia de la cola para no modificar la original
+    queue<Requerimiento> colaTemporal = cola;
+
+    // Iteramos sobre la cola temporal
+    while (!colaTemporal.empty()) {
+        Requerimiento req = colaTemporal.front();
+        colaTemporal.pop();
+
+        cout << "Página: " << req.pagina << ", Acción: " << req.accion << endl;
+    }
+}
+

@@ -120,7 +120,7 @@ public:
 
     }
 
-    void eliminarRegistro(int numero_registro, std::string& registros, int frame) {
+    void eliminarRegistro(int numero_registro, const std::string& registros, int frame) {
         std::string registrosActualizados = registros;
         std::stringstream ss(registrosActualizados);
         std::string linea;

@@ -19,16 +19,16 @@ public:
         cout<<"que es esto"<<endl;
         for (const auto& info : bloquesInfo) {
             std::cout << "Bloque: " << info.nroBloque 
-                      << ", Espacio Ocupado: " << info.espacioOcupado 
-                      << ", Espacio Libre: " << info.espacioLibre 
+                      << ", Espacio Libre: " << info.espacioOcupado 
+                      << ", Espacio Ocupado: " << info.espacioLibre 
                       << ", Direccion: " << info.direccion << std::endl;
         }
     }
 
     void almacenarInformacionBloques(const std::vector<Bloque>& bloques) {
         for (int i = 0; i < bloques.size(); i++) {
-            int espacioLibre = bloques[i].tamanio();
-            int espacioOcupado = bloques[i].tamanio() - espacioOcupado;
+            int espacioOcupado = bloques[i].tamanio();
+            int espacioLibre=tamanioMaximo-bloques[i].tamanio();
             std::string direccion = "bloque_" + std::to_string(i) + ".txt";
             agregarBloque(i+1, espacioOcupado, espacioLibre, direccion);
         }

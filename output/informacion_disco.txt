@@ -1,2 +1,0 @@
-platos	pistas	superficies	sectores	tamanioSector	tamanioDisco
-2	2	2	2	20	320

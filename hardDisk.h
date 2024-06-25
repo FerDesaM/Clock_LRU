@@ -14,72 +14,14 @@
 int tamanioMaximo;
 
 
-using namespace std;
 
-struct BlockHeader {
-    int plato;
-    int superficie;
-    int pista;
-    int sector;
- 
-};
-
-class Block {
-
-public:
-    BlockHeader header;
-    vector<string> sectores;
-
-    Block(int plato, int superficie, int pista, int sector, int tamanoSector, int numSectoresPorBloque) {
-        header.plato = plato;
-        header.superficie = superficie;
-        header.pista = pista;
-        header.sector = sector;
-
-        // Crear sectores vacíos
-        for (int i = 0; i < numSectoresPorBloque; i++) {
-            sectores.push_back(string(tamanoSector, ' '));
-        }
-    }
-
-    string getSectorData(int index) {
-        if (index >= 0 && index < sectores.size()) {
-            return sectores[index];
-        }
-        return "";
-    }
-
-    void setSectorData(int index, const string &data) {
-        if (index >= 0 && index < sectores.size()) {
-            sectores[index] = data;
-        }
-    }
-
-    void addRegistro(const string &registro, int index) {
-        if (index >= 0 && index < sectores.size()) {
-            sectores[index] += registro + "\n";
-        }
-    }
-
-    void eliminarRegistro(int index) {
-        if (index >= 0 && index < sectores.size()) {
-            sectores[index] = "";
-        }
-    }
-
-
-
-};
-
-
-
-class Bloque {
+class Bloque {              // JOSE ALEJANDRO MACHACA MUÑIZ 
 private:
     int Tamanio;
     std::string direccion;
 
 public:
-    void establecerTamanio(int Tamanio) {
+    void establecerTamanio(int Tamanio) {       // JOSE ALEJANDRO MACHACA MUÑIZ 
         this->Tamanio = Tamanio;
     }
 
@@ -87,20 +29,24 @@ public:
         return this->Tamanio;
     }
 
-    void establecerDireccion(const std::string& direccion) {
+    void establecerDireccion(const std::string& direccion) {    // JOSE ALEJANDRO MACHACA MUÑIZ 
         this->direccion += direccion + "\n";
     }
 
-    void RestarTamanio(int tamanio) {
+    void RestarTamanio(int tamanio) {           // JOSE ALEJANDRO MACHACA MUÑIZ 
         this->Tamanio -= tamanio;
     }
 
-    std::string imprimirDireccion() const {
+    void AumentarTamanio(int tamanio) {     // JOSE ALEJANDRO MACHACA MUÑIZ 
+        this->Tamanio += tamanio;
+    }
+
+    std::string imprimirDireccion() const { // JOSE ALEJANDRO MACHACA MUÑIZ 
         return direccion;
     }
 };
 
-void CrearBloques(int sectores, int SectoresTotales, std::vector<Bloque>& bloques, int tamanioXSector) {
+void CrearBloques(int sectores, int SectoresTotales, std::vector<Bloque>& bloques, int tamanioXSector) { // JOSE ALEJANDRO MACHACA MUÑIZ 
     int sectoresTotales = SectoresTotales;
     int cantidadBloques = (sectoresTotales + sectores - 1) / sectores; // Redondeo hacia arriba
 
@@ -127,7 +73,7 @@ private:
     int sectoresPorPista;
     int tam_sect;
     int sectoresporbloque = 4;
-    std::vector<Bloque> bloques;
+    //std::vector<Bloque> bloques;
 public:
     DiscoDuro() : num_platos(0), num_pist(0), sectoresPorPista(0), tam_sect(0) {}
 
@@ -169,9 +115,9 @@ public:
     void setBytesPorSector(int num) {
         tam_sect = num;
     }
-     std::vector<Bloque>& obtenerBloques() {
+     /* std::vector<Bloque>& obtenerBloques() {
         return bloques;
-    }
+    } */
 
     bool discoExiste() {
         struct stat info;
@@ -260,11 +206,6 @@ public:
         cout << "La estructura del disco ha sido creada exitosamente." << endl;
     }
 
-    int calcularLineasPorSector() {
-        int tamano_sector = tam_sect;
-        int tamano_linea = 256;
-        return tamano_sector / tamano_linea;
-    }
 
     void crearArchivo(const string &rutaArchivo) {
         ofstream archivo(rutaArchivo);
@@ -290,8 +231,12 @@ public:
             return false; // El archivo contiene contenido y por lo tanto está ocupado
         }
     }
-
-    void guardarTextoEnBloque(const std::string &archivoTxt) {
+    int calcularLineasPorSector() { //FERNANDO DEZA SOTOMAYOR
+        int tamano_sector = tam_sect;
+        int tamano_linea = 256;
+        return tamano_sector / tamano_linea;
+    }
+    void guardarTextoEnBloque(const std::string &archivoTxt) {//FERNANDO DEZA SOTOMAYOR
         if (!discoExiste()) {
             std::cerr << "El disco no existe." << std::endl;
             return;
@@ -342,7 +287,7 @@ public:
         }
     }
     
-    bool leerSector(const std::string &sector, std::string &contenido) {
+    bool leerSector(const std::string &sector, std::string &contenido) {//FERNANDO DEZA SOTOMAYOR
         std::ifstream archivo(sector);
         if (archivo.is_open()) {
             std::stringstream buffer;
@@ -354,7 +299,7 @@ public:
         return false;
     }
 
-    void leerSectorDinamico() {
+    void leerSectorDinamico() {//FERNANDO DEZA SOTOMAYOR
         int PlatoAmostrar, SuperficieAMostrar, PistaaMostrar, SectorAmostrar;
         cout << "Plato: ";
         cin >> PlatoAmostrar;
@@ -374,7 +319,7 @@ public:
         }
     }
 
-    void capacidad() {
+    void capacidad() {//FERNANDO DEZA SOTOMAYOR
         int capacidad = num_platos * 2 * num_pist * sectoresPorPista * tam_sect;
         cout << "Capacidad del disco:  " << capacidad << " bytes" << endl;
     }
@@ -387,7 +332,7 @@ public:
         return tam_sect;
     }
 
-    void crearBloques() {
+    void crearBloques() {//FERNANDO DEZA SOTOMAYOR
     for (int plato = 1; plato <= num_platos; ++plato) {
         for (int superficie = 1; superficie <= 2; ++superficie) {
             for (int pista = 1; pista <= num_pist; ++pista) {
@@ -437,7 +382,7 @@ public:
 }
 
 
-void mapearDireccionesBloques(const string& archivoSalida) {
+void mapearDireccionesBloques(const string& archivoSalida) {//FERNANDO DEZA SOTOMAYOR
         ofstream archivo(archivoSalida);
         if (!archivo.is_open()) {
             cerr << "No se pudo abrir el archivo " << archivoSalida << " para escritura." << endl;
@@ -469,12 +414,6 @@ void mapearDireccionesBloques(const string& archivoSalida) {
 
 
 
-class heapFIle{
-    public:
-        void direcion(int nroBloque, DiscoDuro discoDuro){
-
-        }
-};
 
 
 #endif // DISK_H

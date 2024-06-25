@@ -1,6 +1,0 @@
-nombre#peso#dia    string = 1
-                    int = 4
-jose#20#7           char = 1
-j#20#7    
-jo#20#7
-jos#20#7   

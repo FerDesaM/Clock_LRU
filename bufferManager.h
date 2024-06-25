@@ -3,7 +3,7 @@
 #include "calcular.h"
 
 
-class BufferManager {
+class BufferManager {                       // JOSE ALEJANDRO MACHACA MUÑIZ                        
 private:
     BufferPool bufferPool;
     PageTable pageTable;
@@ -11,9 +11,9 @@ private:
 
 public:
     
-    BufferManager(size_t num_frames) : bufferPool(num_frames) {}
+    BufferManager(size_t num_frames) : bufferPool(num_frames) {}    // JOSE ALEJANDRO MACHACA MUÑIZ  
     
-    std::string obtenerNombreArchivo(int numPagina) {
+    std::string obtenerNombreArchivo(int numPagina) {                   // JOSE ALEJANDRO MACHACA MUÑIZ 
         // Buscar el nombre del archivo correspondiente al número de página
         for (const auto& pair : archivo_a_numero) {
             if (pair.second == numPagina) {
@@ -23,14 +23,14 @@ public:
         return ""; // Devolver una cadena vacía si no se encuentra el archivo
     }
 
-    void cargarPaginaEnBufferPool(size_t frame_num, const string& nombre_archivo) {
+    void cargarPaginaEnBufferPool(size_t frame_num, const string& nombre_archivo) {  // JOSE ALEJANDRO MACHACA MUÑIZ  
         bufferPool.cargarPaginaAlFrame(frame_num, nombre_archivo);
 
     }
 
     
     
-    void consultarPagina(int numPagina) {
+    void consultarPagina(int numPagina) {               // JOSE ALEJANDRO MACHACA MUÑIZ 
         
         if(numPagina - 1 < 0 || numPagina - 1 >= bloques.size()){
             cout << "fuera de limites de los bloques" << endl;
@@ -70,7 +70,7 @@ public:
         }
     }
 
-    void consultarPagina2(int numPagina) {
+    void consultarPagina2(int numPagina) {      //FERNANDO DEZA SOTOMAYOR                      
     if (pageTable.verificarExistenciaDePagina(numPagina)) {
         // Si la página ya está en la tabla de páginas
         pageTable.aumentarPinCount(numPagina);
@@ -102,14 +102,13 @@ public:
                 std::cout << "La página " << numPagina << " ha sido cargada en el frame " << lruFrame << " y el contador de PinCount se ha incrementado." << std::endl;
             } else {
                 std::cout << "No hay frames disponibles ni páginas LRU para reemplazar." << std::endl;
-                // Aquí podrías considerar algún manejo adicional, como liberar espacio en el buffer pool o manejar un error.
             }
         }
     }
 }
 
 
-    void cancelarSolicitud(int numPagina){
+    void cancelarSolicitud(int numPagina){                          // JOSE ALEJANDRO MACHACA MUÑIZ 
         if (pageTable.verificarExistenciaDePagina(numPagina)) {
             pageTable.descontarPinCount(numPagina);
             cout << "el contadozr Pin Count disminuyo en 1" << endl;
@@ -119,7 +118,7 @@ public:
         }
     }
 
-    void LecturaEscritura1(int numPagina){
+    void LecturaEscritura1(int numPagina){                          // JOSE ALEJANDRO MACHACA MUÑIZ 
     // Verificar la existencia de la página en la tabla de páginas
         bool paginaExiste = pageTable.verificarExistenciaDePagina(numPagina);
         
@@ -210,7 +209,7 @@ public:
                                             // Ingresar datos según el esquema
                                             string registroNuevo;
                                             ingresarDatosSegunEsquema(esquema, registroNuevo);
-                                            cout << "El nuevo registro es: " << registroNuevo << endl;
+                                            cout << "El registro es: " << registroNuevo << endl;
                                             if(bloques[numPagina - 1].tamanio() - tamanioRegistro >= 0){
                                                 int frame = pageTable.obtenerFrameId(numPagina);
                                                 cout << "frame" << numPagina << endl;
@@ -352,7 +351,7 @@ public:
 
                                             int tamanioRegistro2 = calcularTamanioFijoLinea(esquema);    
 
-                                            bloques[numPagina - 1].RestarTamanio(tamanioRegistro2);    // se resta el tamaño del registro como si fuera longitud fija
+                                            bloques[numPagina - 1].AumentarTamanio(tamanioRegistro2);    // se resta el tamaño del registro como si fuera longitud fija
 
                                             int tamanioRegistro = calcularTamanioLineaVariable(registroNuevo, esquema);
 
@@ -360,13 +359,14 @@ public:
 
 
 
-                                            if(bloques[numPagina - 1].tamanio() - tamanioRegistro <= tamanioMaximo){
+                                            if(bloques[numPagina - 1].tamanio() - tamanioRegistro >= 0){
                                                 int registro;
                                                 cout << "que registro desea modificar: "; cin >> registro;
                                                 int frame = pageTable.obtenerFrameId(numPagina);
                                                 cout << "frame" << numPagina << endl;
                                                 bufferPool.modificarRegistro(registro, registroNuevo, bloques[numPagina - 1].imprimirDireccion(), frame);
                                                 bloques[numPagina - 1].RestarTamanio(tamanioRegistro);
+                                                cout  << "el contenido del nuevo registro ha sido guardado" << endl;
                                                 break;
                                             }
                                             else{
@@ -392,14 +392,14 @@ public:
                             cout << "ingrese numero de registro: "; cin >> registro;
                             int frame = pageTable.obtenerFrameId(numPagina);
 
-                            //bufferPool.eliminarRegistro(registro, bloques[numPagina - 1].imprimirDireccion(), frame);
-
+                            bufferPool.eliminarRegistro(registro, bloques[numPagina - 1].imprimirDireccion(), frame);
+                            
                             break;
                         }
 
 
 
-                        cout << "El contenido de la pagina ha sido guardado" << endl;
+                        //cout << "El contenido de la pagina ha sido guardado" << endl;
                         pageTable.aumentarPinCount(numPagina);
                         pageTable.DecrementarDirty(numPagina);
                     }
@@ -485,19 +485,19 @@ public:
  */
        
 
-    void InsertarPinned(int pagina){
+    void InsertarPinned(int pagina){            // JOSE ALEJANDRO MACHACA MUÑIZ 
         pageTable.insertarPinned(pagina);
     }
 
-    void mostrarManecilla() {
+    void mostrarManecilla() {                   // JOSE ALEJANDRO MACHACA MUÑIZ 
         pageTable.mostrarManecilla();
     }
 
-    void mostrarContenidoFrame(int numFrame) {
+    void mostrarContenidoFrame(int numFrame) {          // JOSE ALEJANDRO MACHACA MUÑIZ 
         bufferPool.mostrarContenidoFrame2(numFrame);
     }
 
-    void mostrarTablaDePaginas() {
+    void mostrarTablaDePaginas() {          // JOSE ALEJANDRO MACHACA MUÑIZ 
         pageTable.mostrarTabla();
     }
     void mostrarTablaDePaginas2() {
