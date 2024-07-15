@@ -8,7 +8,7 @@
 using namespace std;
 
 // Función para obtener el esquema de un archivo
-string getSchema(const string& schemaFile, const string& tableName) {
+string getSchema(const string& schemaFile, const string& tableName) {//FERNANDO DEZA SOTOMAYOR
     ifstream file(schemaFile);
     if (file.is_open()) {
         string line;
@@ -29,7 +29,7 @@ string getSchema(const string& schemaFile, const string& tableName) {
 }
 
 // Función para calcular el tamaño de una línea
-int calcularTamanioLineaVariable(const string& linea, const string& esquema) {
+int calcularTamanioLineaVariable(const string& linea, const string& esquema) {//FERNANDO DEZA SOTOMAYOR
     istringstream ssLinea(linea);
     istringstream ssEsquema(esquema);
     string palabra, columna, tipoDato;
@@ -60,7 +60,7 @@ int calcularTamanioLineaVariable(const string& linea, const string& esquema) {
 }
 
 // Función para calcular el tamaño total de todas las líneas en el archivo
-int calcularTamanioTotalVariable(const string& nombreArchivo, const string& esquema) {
+int calcularTamanioTotalVariable(const string& nombreArchivo, const string& esquema) {//FERNANDO DEZA SOTOMAYOR
     ifstream archivo(nombreArchivo);
     string linea;
     int tamanototal=0;
@@ -87,7 +87,7 @@ int calcularTamanioTotalVariable(const string& nombreArchivo, const string& esqu
     cout<<"tamaño total  ";
     return tamanototal;
 }
-int calcularTamanioFijoLinea(const string& esquema) {
+int calcularTamanioFijoLinea(const string& esquema) {//FERNANDO DEZA SOTOMAYOR
     istringstream ssEsquema(esquema);
     string columna, tipoDato;
     int tamanioLinea = 0;
@@ -110,7 +110,7 @@ int calcularTamanioFijoLinea(const string& esquema) {
 }
 
 // Función para calcular y mostrar el tamaño fijo de cada línea en el archivo
-void calcularTamanioFijoTotal(const string& nombreArchivo, const string& esquema) {
+void calcularTamanioFijoTotal(const string& nombreArchivo, const string& esquema) {//FERNANDO DEZA SOTOMAYOR
     ifstream archivo(nombreArchivo);
     string linea;
     int tamanioFijo = calcularTamanioFijoLinea(esquema);
@@ -135,7 +135,7 @@ void calcularTamanioFijoTotal(const string& nombreArchivo, const string& esquema
     }
 }
 
-void ingresarDatosSegunEsquema(const string& esquema, string& registroNuevo) {
+void ingresarDatosSegunEsquema(const string& esquema, string& registroNuevo) {      // JOSE ALEJANDRO MACHACA MUÑIZ 
     istringstream ssEsquema(esquema);
     string columna, tipoDato;
     vector<string> datos;

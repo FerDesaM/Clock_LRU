@@ -1,19 +1,23 @@
 #include "pageTable.h"
 #include "hardDisk.h"
 #include "calcular.h"
+#include "heapfile.h"
+
+heapFile heap;
+
 
 
 class BufferManager {                       // JOSE ALEJANDRO MACHACA MUÑIZ                        
 private:
     BufferPool bufferPool;
     PageTable pageTable;
-    std::unordered_map<std::string, int> archivo_a_numero;
+    //std::unordered_map<std::string, int> archivo_a_numero;
 
 public:
-    
+   
     BufferManager(size_t num_frames) : bufferPool(num_frames) {}    // JOSE ALEJANDRO MACHACA MUÑIZ  
     
-    std::string obtenerNombreArchivo(int numPagina) {                   // JOSE ALEJANDRO MACHACA MUÑIZ 
+      /* std::string obtenerNombreArchivo(int numPagina) {                   // JOSE ALEJANDRO MACHACA MUÑIZ
         // Buscar el nombre del archivo correspondiente al número de página
         for (const auto& pair : archivo_a_numero) {
             if (pair.second == numPagina) {
@@ -21,8 +25,8 @@ public:
             }
         }
         return ""; // Devolver una cadena vacía si no se encuentra el archivo
-    }
-
+    } 
+  */
     void cargarPaginaEnBufferPool(size_t frame_num, const string& nombre_archivo) {  // JOSE ALEJANDRO MACHACA MUÑIZ  
         bufferPool.cargarPaginaAlFrame(frame_num, nombre_archivo);
 
@@ -47,7 +51,7 @@ public:
         if (frame_num == bufferPool.getNumFrames()) {
             // No hay marcos vacíos, es necesario reemplazarlos
             pageTable.replaceReloj(bufferPool.getNumFrames(), numPagina);
-            string nombre_archivo = obtenerNombreArchivo(numPagina); // cambiar
+            //string nombre_archivo = obtenerNombreArchivo(numPagina); // cambiar
 
             int numeroFrameReloj = pageTable.getManecilla() - 1;
 
@@ -58,10 +62,11 @@ public:
 
             bufferPool.cargarPaginaAlFrame2(numeroFrameReloj, bloques[numPagina - 1].imprimirDireccion()); // cambiar
             pageTable.aumentarPinCount(numPagina);
+            
 
         } else {
             // Hay un marco vacío, carga la página en ese marco
-            string nombre_archivo = obtenerNombreArchivo(numPagina);     
+           // string nombre_archivo = obtenerNombreArchivo(numPagina);     
             bufferPool.cargarPaginaAlFrame2(frame_num, bloques[numPagina - 1].imprimirDireccion());   // cambiar 
             pageTable.agregarEntrada(frame_num, numPagina);
             pageTable.incrementaBirtyBit(numPagina);
@@ -81,8 +86,8 @@ public:
         size_t frame_num = bufferPool.buscarFrameVacio();
         if (frame_num != bufferPool.getNumFrames()) {
             // Si hay un frame vacío disponible en el buffer pool
-            std::string nombre_archivo = obtenerNombreArchivo(numPagina);
-            bufferPool.cargarPaginaAlFrame(frame_num, nombre_archivo);
+            //std::string nombre_archivo = obtenerNombreArchivo(numPagina);
+            bufferPool.cargarPaginaAlFrame(frame_num, bloques[numPagina - 1].imprimirDireccion());
             pageTable.agregarEntrada(frame_num, numPagina);
             pageTable.aumentarPinCount(numPagina);
             std::cout << "La página " << numPagina << " ha sido cargada en el frame " << frame_num << " y el contador de PinCount se ha incrementado." << std::endl;
@@ -94,8 +99,8 @@ public:
                 // Se obtiene el número de página asociado al frame LRU
                 int lruPageId = pageTable.entries[lruFrame].PageId;
                 // Actualizar la entrada existente en lugar de eliminarla
-                std::string nombre_archivo = obtenerNombreArchivo(numPagina);
-                bufferPool.cargarPaginaAlFrame(lruFrame, nombre_archivo);
+                //std::string nombre_archivo = obtenerNombreArchivo(numPagina);
+                bufferPool.cargarPaginaAlFrame(lruFrame, bloques[numPagina - 1].imprimirDireccion());
                 // Actualizar la entrada en la tabla de páginas
                 pageTable.entries[lruFrame].PageId = numPagina;
                 pageTable.aumentarPinCount(numPagina);
@@ -129,7 +134,7 @@ public:
             if (frame_num == bufferPool.getNumFrames()) {
                 // No hay marcos vacíos, es necesario reemplazarlos
                 pageTable.replaceReloj(bufferPool.getNumFrames(), numPagina);
-                string nombre_archivo = obtenerNombreArchivo(numPagina);
+                //string nombre_archivo = obtenerNombreArchivo(numPagina);
 
                 int numeroFrameReloj = pageTable.getManecilla() - 1;
                 if (numeroFrameReloj == 0) {
@@ -139,7 +144,7 @@ public:
                 bufferPool.cargarPaginaAlFrame2(numeroFrameReloj, bloques[numPagina - 1].imprimirDireccion()); // cambiar
             } else {
                 // Hay un marco vacío, carga la página en ese marco
-                string nombre_archivo = obtenerNombreArchivo(numPagina);
+                //string nombre_archivo = obtenerNombreArchivo(numPagina);
                 bufferPool.cargarPaginaAlFrame2(frame_num, bloques[numPagina - 1].imprimirDireccion()); // cambiar
                 pageTable.agregarEntrada(frame_num, numPagina);
                 pageTable.incrementaBirtyBit(numPagina);
@@ -223,6 +228,7 @@ public:
                                             }
 
                                         }
+                                        heap.mostrarInformacionBloques();
                                         break;
                                     }
                                 }
@@ -267,6 +273,7 @@ public:
                                             }
 
                                         }
+                                        heap.mostrarInformacionBloques();
                                         break;
                                     }
                                 }
@@ -312,6 +319,7 @@ public:
                                                 cout << "que registro desea modificar: "; cin >> registro;
 
                                                 bufferPool.modificarRegistro(registro, registroNuevo, bloques[numPagina - 1].imprimirDireccion(), frame);
+                                                heap.mostrarInformacionBloques();
                                                 break;
                                             }
                                             else{
@@ -320,6 +328,7 @@ public:
                                             }
 
                                         }
+                                        heap.mostrarInformacionBloques();
                                         break;
                                     }
                                 }
@@ -381,6 +390,8 @@ public:
 
                                 archivoEsquemas.close();
                             }
+
+                            heap.mostrarInformacionBloques();
 
                             break;
                         
@@ -462,7 +473,7 @@ public:
         }
     }
 
-    void GuardarValorerDisco(int pagina){
+    /* void GuardarValorerDisco(int pagina){
 
         cout << pageTable.entries[pagina].DirtyBit << endl;
 
@@ -475,7 +486,7 @@ public:
         
             
         
-    }
+    } */
 
     /* void GuardarBloque(int pagina){
       
@@ -500,7 +511,7 @@ public:
     void mostrarTablaDePaginas() {          // JOSE ALEJANDRO MACHACA MUÑIZ 
         pageTable.mostrarTabla();
     }
-    void mostrarTablaDePaginas2() {
+    void mostrarTablaDePaginas2() { //FERNANDO DEZA SOTOMAYOR
         pageTable.mostrarTablaLRU();
     }
 

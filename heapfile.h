@@ -1,7 +1,7 @@
 #include "hardDisk.h"
 class heapFile {
 public:
-    struct BloqueInfo {
+    struct BloqueInfo {//FERNANDO DEZA SOTOMAYOR
         int nroBloque;
         int espacioOcupado;
         int espacioLibre;
@@ -10,13 +10,13 @@ public:
 
     std::vector<BloqueInfo> bloquesInfo;
 
-    void agregarBloque(int nroBloque, int espacioOcupado, int espacioLibre, const std::string& direccion) {
+    void agregarBloque(int nroBloque, int espacioOcupado, int espacioLibre, const std::string& direccion){ //FERNANDO DEZA SOTOMAYOR
         BloqueInfo info = { nroBloque, espacioOcupado, espacioLibre, direccion };
         bloquesInfo.push_back(info);
     }
 
-    void mostrarInformacionBloques() {
-        cout<<"que es esto"<<endl;
+    void mostrarInformacionBloques() {//FERNANDO DEZA SOTOMAYOR
+        //cout<<"que es esto"<<endl;
         for (const auto& info : bloquesInfo) {
             std::cout << "Bloque: " << info.nroBloque 
                       << ", Espacio Libre: " << info.espacioOcupado 
@@ -25,7 +25,7 @@ public:
         }
     }
 
-    void almacenarInformacionBloques(const std::vector<Bloque>& bloques) {
+    void almacenarInformacionBloques(const std::vector<Bloque>& bloques) {//FERNANDO DEZA SOTOMAYOR
         for (int i = 0; i < bloques.size(); i++) {
             int espacioOcupado = bloques[i].tamanio();
             int espacioLibre=tamanioMaximo-bloques[i].tamanio();

@@ -4,14 +4,14 @@ private:
     std::vector<Frame> frames;
 
 public:
-    BufferPool(size_t num_frames) {
+    BufferPool(size_t num_frames) {             // JOSE ALEJANDRO MACHACA MUÑIZ 
         frames.reserve(num_frames);
         for (size_t i = 0; i < num_frames; ++i) {
             frames.emplace_back();
         }
     }
 
-    void cargarPaginaAlFrame(size_t numero_frame, const std::string& nombre_archivo) {
+    void cargarPaginaAlFrame(size_t numero_frame, const std::string& nombre_archivo) {      // JOSE ALEJANDRO MACHACA MUÑIZ 
         if (numero_frame >= 0 && numero_frame < frames.size()) {
             frames[numero_frame].agregarPagina(nombre_archivo);
         } else {
@@ -19,7 +19,7 @@ public:
         }
     }
 
-    void cargarPaginaAlFrame2(size_t numero_frame, const std::string& contenido) {
+    void cargarPaginaAlFrame2(size_t numero_frame, const std::string& contenido) {      // JOSE ALEJANDRO MACHACA MUÑIZ 
         if (numero_frame < frames.size()) {
             frames[numero_frame].agregarPaginaConContenido(contenido);
         } else {
@@ -29,7 +29,7 @@ public:
 
     
 
-    void mostrarContenidoFrame2(int numero_frame) {
+    void mostrarContenidoFrame2(int numero_frame) {             // JOSE ALEJANDRO MACHACA MUÑIZ 
         if (numero_frame >= 0 && numero_frame < frames.size()) {
             std::cout << "Contenido del Frame " << numero_frame << ":" << std::endl;
             frames[numero_frame].mostrarPagina();
@@ -38,7 +38,7 @@ public:
         }
     }
 
-    size_t buscarFrameVacio() const {
+    size_t buscarFrameVacio() const {           // JOSE ALEJANDRO MACHACA MUÑIZ 
         for (size_t i = 0; i < frames.size(); ++i) {
             if (frames[i].estaVacio()) {
                 return i;
@@ -47,11 +47,11 @@ public:
         return frames.size(); // No hay frames vacíos
     }
 
-    size_t getNumFrames() const {
+    size_t getNumFrames() const {       // JOSE ALEJANDRO MACHACA MUÑIZ 
         return frames.size();
     }
 
-    Frame* obtenerFrame(size_t numero_frame) {
+    Frame* obtenerFrame(size_t numero_frame) {          // JOSE ALEJANDRO MACHACA MUÑIZ 
         if (numero_frame >= 0 && numero_frame < frames.size()) {
             return &frames[numero_frame];
         } else {
@@ -60,7 +60,7 @@ public:
         }
     }
 
-    void insertarTextoEnPagina(size_t numero_frame, string texto) {
+    void insertarTextoEnPagina(size_t numero_frame, string texto) {     // JOSE ALEJANDRO MACHACA MUÑIZ 
         if (numero_frame < frames.size()) {
 
             frames[numero_frame].insertarTexto(texto);

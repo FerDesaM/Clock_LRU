@@ -3,7 +3,7 @@ class PageTable {
 private:
     int manecilla = 0; // puntero para el algoritmo del reloj
 
-    struct PageEntry {
+    struct PageEntry {          // JOSE ALEJANDRO MACHACA MUÑIZ 
         int FrameId;
         int PageId;
         int DirtyBit;
@@ -26,7 +26,7 @@ vector<PageEntry> entries;
     // Destructor
     ~PageTable() {}
 
-    int obtenerFrameId(int pageId) {
+    int obtenerFrameId(int pageId) {    // JOSE ALEJANDRO MACHACA MUÑIZ 
         for (size_t i = 0; i < entries.size(); ++i) {
             if (entries[i].PageId == pageId) {
                 return entries[i].FrameId;
@@ -37,7 +37,7 @@ vector<PageEntry> entries;
     }
 
 
-    bool isDirty(int pageId) {
+    bool isDirty(int pageId) {          // JOSE ALEJANDRO MACHACA MUÑIZ 
         for (const auto& entry : entries) {
             if (entry.PageId == pageId) {
                 return entry.DirtyBit == 1;
@@ -48,7 +48,7 @@ vector<PageEntry> entries;
     }
 
     // Insertar pinned
-    void insertarPinned(int pageId) {
+    void insertarPinned(int pageId) {           // JOSE ALEJANDRO MACHACA MUÑIZ 
         for (size_t i = 0; i < entries.size(); ++i) {
             if (entries[i].PageId == pageId) {
                 entries[i].Pineed = true;
@@ -59,8 +59,8 @@ vector<PageEntry> entries;
         cout << "No se encontró ninguna página con PageId " << pageId << "." << endl;
     }
 
-    // Mostrar la tabla 
-    void mostrarTabla() {
+    // Mostrar la tabla     
+    void mostrarTabla() {                           // JOSE ALEJANDRO MACHACA MUÑIZ 
         cout << "Frame id\tPageId\tDirtyBit\tPin Count\tReferenceBit\tPinned" << endl;
         for (size_t i = 0; i < entries.size(); ++i) {
             cout << entries[i].FrameId << "\t\t" << entries[i].PageId << "\t\t" 
@@ -70,7 +70,7 @@ vector<PageEntry> entries;
         cout << endl;
     }
 
-    void mostrarTablaLRU(){
+    void mostrarTablaLRU(){ //FERNANDO DEZA SOTOMAYOR
         cout << "Frame id\tPageId\tPin Count\tLastUsed\tPinned" << endl;
         for (size_t i = 0; i < entries.size(); ++i) {
             cout << entries[i].FrameId << "\t\t" << entries[i].PageId << "\t\t" 
@@ -81,7 +81,7 @@ vector<PageEntry> entries;
     }
 
     // Verificar si una página dada existe en la tabla de páginas
-    bool verificarExistenciaDePagina(int numPagina) {
+    bool verificarExistenciaDePagina(int numPagina) {           // JOSE ALEJANDRO MACHACA MUÑIZ 
         for (size_t i = 0; i < entries.size(); ++i) {
             if (entries[i].PageId == numPagina) {
                 return true;
@@ -91,7 +91,7 @@ vector<PageEntry> entries;
     }
 
     // Obtener el número de marco asociado a una página dada
-    int getNumFrame(int numPagina) {
+    int getNumFrame(int numPagina) {                                // JOSE ALEJANDRO MACHACA MUÑIZ 
         for (size_t i = 0; i < entries.size(); ++i) {
             if (entries[i].PageId == numPagina) {
                 return entries[i].FrameId;
@@ -101,7 +101,7 @@ vector<PageEntry> entries;
     }
 
     // Disminuir el contador de pines (PinCount) de una página dada
-    void descontarPinCount(int numPagina) {
+    void descontarPinCount(int numPagina) {                         // JOSE ALEJANDRO MACHACA MUÑIZ 
         for (size_t i = 0; i < entries.size(); ++i) {
             if (entries[i].PageId == numPagina) {
                 entries[i].PinCount--;
@@ -111,7 +111,7 @@ vector<PageEntry> entries;
     }
 
     // Aumentar el contador de pines (PinCount) de una página dada
-    void aumentarPinCount(int numPagina) {
+    void aumentarPinCount(int numPagina) {                          // JOSE ALEJANDRO MACHACA MUÑIZ 
         for (size_t i = 0; i < entries.size(); ++i) {
             if (entries[i].PageId == numPagina) {
                 entries[i].PinCount++;
@@ -121,7 +121,7 @@ vector<PageEntry> entries;
     }
 
     // Cambiar el bit de suciedad (DirtyBit) de una página dada entre 0 y 1
-    void AumentarDirty(int numPagina) {
+    void AumentarDirty(int numPagina) {                             // JOSE ALEJANDRO MACHACA MUÑIZ 
         for (size_t i = 0; i < entries.size(); ++i) {
             if (entries[i].PageId == numPagina) {
                 entries[i].DirtyBit = 1;
@@ -130,7 +130,7 @@ vector<PageEntry> entries;
         }
     }
 
-    void DecrementarDirty(int numPagina) {
+    void DecrementarDirty(int numPagina) {                      // JOSE ALEJANDRO MACHACA MUÑIZ 
         for (size_t i = 0; i < entries.size(); ++i) {
             if (entries[i].PageId == numPagina) {
                 entries[i].DirtyBit = 0;
@@ -140,7 +140,7 @@ vector<PageEntry> entries;
     }
 
 
-    void incrementarLastUsed(int numPagina) {
+    void incrementarLastUsed(int numPagina) {                   // JOSE ALEJANDRO MACHACA MUÑIZ 
         for (size_t i = 0; i < entries.size(); ++i) {
             if (entries[i].PageId == numPagina) {
                 entries[i].LastUsed++;
@@ -150,7 +150,7 @@ vector<PageEntry> entries;
     }
 
     // Decrementar el valor de LastUsed de una página dada
-    void decrementarLastUsed(int numPagina) {
+    void decrementarLastUsed(int numPagina) {                   // JOSE ALEJANDRO MACHACA MUÑIZ 
         for (size_t i = 0; i < entries.size(); ++i) {
             if (entries[i].PageId == numPagina) {
                 if (entries[i].LastUsed > 0) {
@@ -161,7 +161,7 @@ vector<PageEntry> entries;
         }
     }
 
-    void incrementaBirtyBit(int numPagina) {
+    void incrementaBirtyBit(int numPagina) {                // JOSE ALEJANDRO MACHACA MUÑIZ 
         for (size_t i = 0; i < entries.size(); ++i) {
             if (entries[i].PageId == numPagina) {
                 entries[i].BirtyBit = 1;
@@ -171,7 +171,7 @@ vector<PageEntry> entries;
     }
 
     // Decrementar el valor de BirtyBit de una página dada
-    void decrementaBirtyBit(int numPagina) {
+    void decrementaBirtyBit(int numPagina) {                // JOSE ALEJANDRO MACHACA MUÑIZ 
         for (size_t i = 0; i < entries.size(); ++i) {
             if (entries[i].PageId == numPagina) {
                 if (entries[i].BirtyBit > 0) {
@@ -188,7 +188,7 @@ vector<PageEntry> entries;
  */
     // Actualizar los datos en la tabla de páginas cuando se solicita una página
     
-    void replaceReloj(int frameId, int pageId) {
+    void replaceReloj(int frameId, int pageId) {                    // JOSE ALEJANDRO MACHACA MUÑIZ 
         if (entries.empty()) {
             // Si la tabla está vacía, simplemente añade la nueva entrada
             agregarEntrada(frameId, pageId);
@@ -243,23 +243,23 @@ vector<PageEntry> entries;
 
 
 
-    void aumentarManecilla(int numeroFrames){
+    void aumentarManecilla(int numeroFrames){           // JOSE ALEJANDRO MACHACA MUÑIZ 
         manecilla = (manecilla + 1) % numeroFrames;
     }
 
-     void mostrarManecilla() {
+     void mostrarManecilla() {                          // JOSE ALEJANDRO MACHACA MUÑIZ 
        cout << "la manecilla esta apuntado al frame: " << manecilla << endl;
     }
 
-    int getManecilla(){
+    int getManecilla(){                 // JOSE ALEJANDRO MACHACA MUÑIZ 
         return manecilla;
     }
 
-    void agregarEntrada(int frameId, int pageId) {
+    void agregarEntrada(int frameId, int pageId) {          // JOSE ALEJANDRO MACHACA MUÑIZ 
         entries.emplace_back(frameId, pageId);
     }
 
-    bool verificarExistenciaDePagina(int numPagina) const {
+    bool verificarExistenciaDePagina(int numPagina) const {     // JOSE ALEJANDRO MACHACA MUÑIZ 
         for (const auto& entry : entries) {
             if (entry.PageId == numPagina) {
                 return true;
@@ -267,7 +267,7 @@ vector<PageEntry> entries;
         }
         return false;
     }
-    int obtenerFrameLRU() const {
+    int obtenerFrameLRU() const {//FERNANDO DEZA SOTOMAYOR
     int lruIndex = -1;
     int lruValue = INT_MAX;
     for (size_t i=0 ;i<entries.size(); ++i) {

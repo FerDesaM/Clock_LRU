@@ -63,7 +63,6 @@ void CrearBloques(int sectores, int SectoresTotales, std::vector<Bloque>& bloque
     }
 }
 
-
 std::vector<Bloque> bloques;
 
 class DiscoDuro {
@@ -74,6 +73,8 @@ private:
     int tam_sect;
     int sectoresporbloque = 4;
     //std::vector<Bloque> bloques;
+    
+
 public:
     DiscoDuro() : num_platos(0), num_pist(0), sectoresPorPista(0), tam_sect(0) {}
 
@@ -103,6 +104,9 @@ public:
     int obtenerSectoresPorBloque() const {
         return sectoresporbloque;
     }
+    /*std::vector<Bloque>& obtenerBloques() {
+        return bloques;
+    }*/
 
     void setPistasPorSuperficie(int num) {
         num_pist = num;
@@ -115,69 +119,94 @@ public:
     void setBytesPorSector(int num) {
         tam_sect = num;
     }
-     /* std::vector<Bloque>& obtenerBloques() {
-        return bloques;
-    } */
 
     bool discoExiste() {
         struct stat info;
         return stat("discoDuro", &info) == 0 && S_ISDIR(info.st_mode);
     }
 
-    void CrearBloques3() {
+    void CrearBloquesVectores() {
         int sectoresporbloque;
         std::cout << "Ingrese la cantidad de sectores por bloque: ";
         std::cin >> sectoresporbloque;
 
         int SectoresTotales = num_platos * num_pist * sectoresPorPista * 2;
-        ::CrearBloques(sectoresporbloque, SectoresTotales, bloques, obtenerTamSector());
+        ::CrearBloques(sectoresporbloque, SectoresTotales, bloques,  obtenerTamSector());
     }
 
-    void guardarContenidoBloque() {
-        std::string archivoTxt = "titanic.txt";
-        std::string archivoEsquema = "esquemas.txt";
-        std::string tableName = "nombreTabla"; // Cambia esto al nombre de tu tabla
+    void guardarContenidoBloque(const std::string &archivoTxt) {
+    
+    std::string archivoEsquema = "esquemas.txt";
+    std::string tableName = "nombreTabla"; // Cambia esto al nombre de tu tabla
 
-        // Obtener esquema
-        std::string esquema = getSchema(archivoEsquema, "titanic");
+    // Obtener esquema
+    std::string esquema = getSchema(archivoEsquema, "titanic");
 
-        if (esquema.empty()) {
-            std::cout << "No se encontró el esquema para la tabla " << tableName << std::endl;
-            return;
+    if (esquema.empty()) {
+        std::cout << "No se encontró el esquema para la tabla " << tableName << std::endl;
+        return;
+    }
+
+    // Calcular tamaño de línea
+    int tamanioLinea = calcularTamanioFijoLinea(esquema);
+
+    // Leer archivo de registros
+    std::ifstream archivo(archivoTxt);
+    if (!archivo.is_open()) {
+        std::cout << "No se pudo abrir el archivo " << archivoTxt << std::endl;
+        return;
+    }
+
+    std::string linea;
+    int bloqueActual = 0;
+
+    // Leer el contenido y guardar en bloques
+    while (getline(archivo, linea)) {
+        if (bloques[bloqueActual].tamanio() < tamanioLinea) {
+            bloqueActual++;
+            if (bloqueActual >= bloques.size()) {
+                std::cout << "No hay más bloques disponibles" << std::endl;
+                return;
+            }
         }
+        bloques[bloqueActual].establecerDireccion(linea);
+        bloques[bloqueActual].RestarTamanio(tamanioLinea);
+    }
+         archivo.close();
+    // Mostrar el contenido de los bloques
+    for (int i = 0; i < bloques.size(); i++) {
+        std::cout << "Bloque " << i << " contiene:\n" << bloques[i].imprimirDireccion() << std::endl;
+    }
+        int sectorIndex = 0;
+        for (int plato = 1; plato <= num_platos; ++plato) {
+            for (int superficie = 1; superficie <= 2; ++superficie) {
+                for (int pista = 1; pista <= num_pist; ++pista) {
+                    for (int sector = 1; sector <= sectoresPorPista; ++sector) {
+                        std::string archivoSector = "discoDuro/plato_" + std::to_string(plato) + "/superficie_" + std::to_string(superficie) + "/pista_" + std::to_string(pista) + "/sector_" + std::to_string(sector) + ".txt";
 
-        // Calcular tamaño de línea
-        int tamanioLinea = calcularTamanioFijoLinea(esquema);
-
-        // Leer archivo de registros
-        std::ifstream archivo(archivoTxt);
-        if (!archivo.is_open()) {
-            std::cout << "No se pudo abrir el archivo " << archivoTxt << std::endl;
-            return;
-        }
-
-        std::string linea;
-        int bloqueActual = 0;
-
-        while (getline(archivo, linea)) {
-            if (bloques[bloqueActual].tamanio() < tamanioLinea) {
-                bloqueActual++;
-                if (bloqueActual >= bloques.size()) {
-                    std::cout << "No hay más bloques disponibles" << std::endl;
-                    break;
+                        if (sectorDisponible(archivoSector)) {
+                            std::ofstream archivoEscritura(archivoSector);
+                            if (archivoEscritura.is_open()) {
+                                int lineasEscritas = 0;
+                                if (sectorIndex < bloques.size() && lineasEscritas < tamanioLinea) {
+                                    archivoEscritura << bloques[sectorIndex].imprimirDireccion() << std::endl;
+                                    ++lineasEscritas;
+                                    ++sectorIndex;
+                                }
+                                archivoEscritura.close();
+                                std::cout << "Texto guardado en " << archivoSector << std::endl;
+                            } else {
+                                std::cerr << "No se pudo abrir el archivo " << archivoSector << " para escritura." << std::endl;
+                            }
+                        } else {
+                            std::cerr << "El sector no está disponible: " << archivoSector << std::endl;
+                        }
+                    }
                 }
             }
-            bloques[bloqueActual].establecerDireccion(linea);
-            bloques[bloqueActual].RestarTamanio(tamanioLinea);
         }
 
-        archivo.close();
-
-        // Mostrar el contenido de los bloques
-        for (int i = 0; i < bloques.size(); i++) {
-            std::cout << "Bloque " << i << " contiene:\n" << bloques[i].imprimirDireccion() << std::endl;
-        }
-    }
+}
 
 
     void crearEstructuraDisco() {
@@ -206,6 +235,11 @@ public:
         cout << "La estructura del disco ha sido creada exitosamente." << endl;
     }
 
+    int calcularLineasPorSector() {
+        int tamano_sector = tam_sect;
+        int tamano_linea = 256;
+        return tamano_sector / tamano_linea;
+    }
 
     void crearArchivo(const string &rutaArchivo) {
         ofstream archivo(rutaArchivo);
@@ -231,12 +265,8 @@ public:
             return false; // El archivo contiene contenido y por lo tanto está ocupado
         }
     }
-    int calcularLineasPorSector() { //FERNANDO DEZA SOTOMAYOR
-        int tamano_sector = tam_sect;
-        int tamano_linea = 256;
-        return tamano_sector / tamano_linea;
-    }
-    void guardarTextoEnBloque(const std::string &archivoTxt) {//FERNANDO DEZA SOTOMAYOR
+
+    void guardarTextoEnBloque(const std::string &archivoTxt) {
         if (!discoExiste()) {
             std::cerr << "El disco no existe." << std::endl;
             return;
@@ -286,8 +316,7 @@ public:
             }
         }
     }
-    
-    bool leerSector(const std::string &sector, std::string &contenido) {//FERNANDO DEZA SOTOMAYOR
+    bool leerSector(const std::string &sector, std::string &contenido) {
         std::ifstream archivo(sector);
         if (archivo.is_open()) {
             std::stringstream buffer;
@@ -299,7 +328,7 @@ public:
         return false;
     }
 
-    void leerSectorDinamico() {//FERNANDO DEZA SOTOMAYOR
+    void leerSectorDinamico() {
         int PlatoAmostrar, SuperficieAMostrar, PistaaMostrar, SectorAmostrar;
         cout << "Plato: ";
         cin >> PlatoAmostrar;
@@ -319,7 +348,7 @@ public:
         }
     }
 
-    void capacidad() {//FERNANDO DEZA SOTOMAYOR
+    void capacidad() {
         int capacidad = num_platos * 2 * num_pist * sectoresPorPista * tam_sect;
         cout << "Capacidad del disco:  " << capacidad << " bytes" << endl;
     }
@@ -332,7 +361,7 @@ public:
         return tam_sect;
     }
 
-    void crearBloques() {//FERNANDO DEZA SOTOMAYOR
+    void crearBloques() {
     for (int plato = 1; plato <= num_platos; ++plato) {
         for (int superficie = 1; superficie <= 2; ++superficie) {
             for (int pista = 1; pista <= num_pist; ++pista) {
@@ -382,7 +411,7 @@ public:
 }
 
 
-void mapearDireccionesBloques(const string& archivoSalida) {//FERNANDO DEZA SOTOMAYOR
+void mapearDireccionesBloques(const string& archivoSalida) {
         ofstream archivo(archivoSalida);
         if (!archivo.is_open()) {
             cerr << "No se pudo abrir el archivo " << archivoSalida << " para escritura." << endl;

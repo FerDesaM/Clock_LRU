@@ -1,7 +1,7 @@
 #include "hardDisk.h"
 #include "bufferManager.h"
 #include <iostream>
-#include "heapfile.h"
+
 using namespace std;
 
 int main() {
@@ -44,13 +44,18 @@ int main() {
                     //disco.guardarTextoEnBloque(archivoTxt);
 
                     // Crear los bloques
-                    //disco.crearBloques();
+                    //
                     //disco.mapearDireccionesBloques("map.txt");
 
                     heapFile heap;
-                    disco.CrearBloques3();
-                    disco.guardarContenidoBloque();
+                    disco.CrearBloquesVectores();
+                    //esta bien esto??
+                    
+                    disco.guardarContenidoBloque(archivoTxt);
                     heap.almacenarInformacionBloques(bloques);
+
+                    disco.crearBloques();
+                    
                     heap.mostrarInformacionBloques();
                     // Opciones adicionales
                     int opcion;
@@ -172,7 +177,7 @@ int main() {
                                     int pagina;
                                     cout << "Ingrese el número de página: ";
                                     cin >> pagina;
-                                    bufferManager->GuardarValorerDisco(pagina);
+                                    //bufferManager->GuardarValorerDisco(pagina);
                                 }
                                 break;
                             }
@@ -218,7 +223,7 @@ int main() {
                         }
                     }
                 }
-                else if (elegirAlgoritmo ==  2){
+                /* else if (elegirAlgoritmo ==  2){
                     int opcion = 0;
                     while (opcion != 9) {
                         std::cout << "\nMenu:\n";
@@ -318,7 +323,7 @@ int main() {
                             }
                         }
                     }
-                }
+                } */
             }
 
             case 3: {

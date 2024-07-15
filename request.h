@@ -15,10 +15,10 @@ struct Requerimiento
     int accion;
 };
 
-queue<Requerimiento> Requerimientos;
+queue<Requerimiento> Requerimientos;        // JOSE ALEJANDRO MACHACA MUÑIZ 
 
 
-bool hayEscrituraPendiente(int pagina) {
+bool hayEscrituraPendiente(int pagina) {            // JOSE ALEJANDRO MACHACA MUÑIZ 
     // Creamos una copia de la cola original para no modificarla
     queue<Requerimiento> colaTemporal = Requerimientos;
 
@@ -39,7 +39,7 @@ bool hayEscrituraPendiente(int pagina) {
     return escrituraPendiente;
 }
 
-void imprimirCola(queue<Requerimiento> cola) {
+void imprimirCola(queue<Requerimiento> cola) {          // JOSE ALEJANDRO MACHACA MUÑIZ 
     cout << "Contenido de la cola Requerimientos:" << endl;
 
     // Creamos una copia de la cola para no modificar la original
