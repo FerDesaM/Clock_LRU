@@ -1,5 +1,5 @@
-#include "hardDisk.h"
-#include "bufferManager.h"
+#include "DIsco_Duro/hardDisk.h"
+#include "Buffer_Manager/bufferManager.h"
 #include <iostream>
 
 using namespace std;

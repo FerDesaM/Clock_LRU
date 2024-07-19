@@ -1,7 +1,7 @@
 #include "pageTable.h"
-#include "hardDisk.h"
+#include "../DIsco_Duro/hardDisk.h"
 #include "calcular.h"
-#include "heapfile.h"
+#include "../DIsco_Duro/heapfile.h"
 
 heapFile heap;
 
