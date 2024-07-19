@@ -1,3 +1,5 @@
+#ifndef FRAME_H
+#define FRAME_H
 #include "pagina.h"
 class Frame {
 private:
@@ -45,3 +47,4 @@ public:
     }
 
 };
+#endif //REPLACER_H

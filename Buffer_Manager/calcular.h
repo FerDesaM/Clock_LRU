@@ -4,7 +4,7 @@
 #include <fstream>
 #include <sstream>
 #include <string>
-
+#include <vector>
 using namespace std;
 
 // Función para obtener el esquema de un archivo

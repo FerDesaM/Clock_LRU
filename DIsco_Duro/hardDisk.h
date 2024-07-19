@@ -9,7 +9,7 @@
 #include <sstream>
 #include <algorithm>
 
-#include "calcular.h"
+#include "../Buffer_Manager/calcular.h"
 
 int tamanioMaximo;
 
