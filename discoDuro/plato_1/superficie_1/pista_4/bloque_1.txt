@@ -1,0 +1,18 @@
+Plato: 1 Superficie: 1 Pista: 4 bloque 1
+===================
+Plato: 1 Superficie: 1 Pista: 4 Sector: 1 --
+
+
+-------------------
+Plato: 1 Superficie: 1 Pista: 4 Sector: 2 --
+
+
+-------------------
+Plato: 1 Superficie: 1 Pista: 4 Sector: 3 --
+
+
+-------------------
+Plato: 1 Superficie: 1 Pista: 4 Sector: 4 --
+
+
+-------------------

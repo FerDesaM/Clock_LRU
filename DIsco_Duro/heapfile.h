@@ -33,4 +33,14 @@ public:
             agregarBloque(i+1, espacioOcupado, espacioLibre, direccion);
         }
     }
+    void actualizarBloque(int nroBloque, int espacioOcupado, int espacioLibre) {
+        for (auto& info : bloquesInfo) {
+            if (info.nroBloque == nroBloque) {
+                info.espacioOcupado = espacioOcupado;
+                info.espacioLibre = espacioLibre;
+                return;
+            }
+        }
+        // Si el bloque no se encuentra, podrías agregar uno nuevo
+    }
 };

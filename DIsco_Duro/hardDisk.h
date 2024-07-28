@@ -136,8 +136,8 @@ public:
 
     void guardarContenidoBloque(const std::string &archivoTxt) {
     
-    std::string archivoEsquema = "esquemas.txt";
-    std::string tableName = "nombreTabla"; // Cambia esto al nombre de tu tabla
+    std::string archivoEsquema = "output/esquemas.txt";
+    std::string tableName = "titanic#"; // Cambia esto al nombre de tu tabla
 
     // Obtener esquema
     std::string esquema = getSchema(archivoEsquema, "titanic");

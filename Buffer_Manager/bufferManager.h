@@ -158,6 +158,9 @@ public:
                 pageTable.incrementaBirtyBit(numPagina);
             }
         }
+        //void InsercionEliminacionREgistro(){
+
+        //}
         
 
         // Solicitar operación de lectura o escritura
@@ -193,7 +196,7 @@ public:
                             cout << "2. si desea insertar el rigistro con longitud variable" << endl;
                             cout << "opcion: "; cin >> opcion3;
                             if (opcion3 == 1) {
-                                ifstream archivoEsquemas("esquemas.txt");
+                                ifstream archivoEsquemas("output/esquemas.txt");
                                 if (!archivoEsquemas.is_open()) {
                                     cerr << "No se pudo abrir el archivo esquemas.txt" << endl;
                                     return;
@@ -219,7 +222,12 @@ public:
                                                 int frame = pageTable.obtenerFrameId(numPagina);
                                                 cout << "frame" << numPagina << endl;
                                                 bufferPool.insertarTextoEnPagina(frame, registroNuevo);
+                                                cout << "Espacio libre antes de la actualización: " << bloques[numPagina - 1].tamanio() << endl;
                                                 bloques[numPagina - 1].RestarTamanio(tamanioRegistro);
+                                                heap.actualizarBloque(numPagina, 
+                              bloques[numPagina - 1].tamanio() - tamanioRegistro, 
+                              tamanioMaximo - (bloques[numPagina - 1].tamanio() - tamanioRegistro));
+                                                cout << "Espacio libre después de la actualización: " << bloques[numPagina - 1].tamanio() << endl;
                                                 break;
                                             }
                                             else{
@@ -236,7 +244,7 @@ public:
                                 archivoEsquemas.close();
                             }
                             else if(opcion3 == 2){
-                                 ifstream archivoEsquemas("esquemas.txt");
+                                 ifstream archivoEsquemas("output/esquemas.txt");
                                 if (!archivoEsquemas.is_open()) {
                                     cerr << "No se pudo abrir el archivo esquemas.txt" << endl;
                                     return;
@@ -290,7 +298,7 @@ public:
                             cout << "2. si desea insertar el rigistro con longitud variable" << endl;
                             cout << "opcion: "; cin >> opcion3;
                             if (opcion3 == 1) {
-                                ifstream archivoEsquemas("esquemas.txt");
+                                ifstream archivoEsquemas("output/esquemas.txt");
                                 if (!archivoEsquemas.is_open()) {
                                     cerr << "No se pudo abrir el archivo esquemas.txt" << endl;
                                     return;
@@ -336,7 +344,7 @@ public:
                                 archivoEsquemas.close();
                             }
                             else if(opcion3 == 2){
-                                 ifstream archivoEsquemas("esquemas.txt");
+                                 ifstream archivoEsquemas("output/esquemas.txt");
                                 if (!archivoEsquemas.is_open()) {
                                     cerr << "No se pudo abrir el archivo esquemas.txt" << endl;
                                     return;
@@ -375,6 +383,7 @@ public:
                                                 cout << "frame" << numPagina << endl;
                                                 bufferPool.modificarRegistro(registro, registroNuevo, bloques[numPagina - 1].imprimirDireccion(), frame);
                                                 bloques[numPagina - 1].RestarTamanio(tamanioRegistro);
+                                                heap.mostrarInformacionBloques();
                                                 cout  << "el contenido del nuevo registro ha sido guardado" << endl;
                                                 break;
                                             }
@@ -391,7 +400,7 @@ public:
                                 archivoEsquemas.close();
                             }
 
-                            heap.mostrarInformacionBloques();
+                            
 
                             break;
                         

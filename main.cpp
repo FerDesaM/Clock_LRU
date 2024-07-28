@@ -8,7 +8,7 @@ int main() {
     int num_platos, num_pistas, num_sectores, tam_sector;
     bool continuar = true;
     int operacion;
-
+    
     while (continuar) {
         cout << "Ingrese 1 si desea operación con el disco" << endl;
         cout << "Ingrese 2 si desea operaciones con el bufferManager" << endl;
@@ -47,7 +47,7 @@ int main() {
                     //
                     //disco.mapearDireccionesBloques("map.txt");
 
-                    heapFile heap;
+                    
                     disco.CrearBloquesVectores();
                     //esta bien esto??
                     
@@ -103,7 +103,7 @@ int main() {
 
                 if (elegirAlgoritmo == 1) {
                     int opcion = 0;
-                    while (opcion != 9) {
+                    while (opcion != 10) {
                         cout << "\nMenú:\n";
                         cout << "1. Crear BufferPool\n";
                         cout << "2. Consultar página en BufferPool\n";
@@ -113,7 +113,8 @@ int main() {
                         cout << "6. Guardar en bloque\n";
                         cout << "7. Mostrar tabla\n";
                         cout << "8. Mostrar contenido de frame\n";
-                        cout << "9. Regresar al menú principal\n";
+                        cout << "9. Mostrar el informacion de paginas\n";
+                        cout << "10.Regresar a Menu principal\n";
                         cout << "Seleccione una opción: ";
                         cin >> opcion;
 
@@ -213,6 +214,10 @@ int main() {
                                 break;
                             }
                             case 9: {
+                                cout<<"Mostrar informacion de los bloques";
+                                heap.mostrarInformacionBloques();
+                                break;
+                            }case 10: {
                                 cout << "Regresando al menú principal..." << endl;
                                 break;
                             }
@@ -327,11 +332,15 @@ int main() {
             }
 
             case 3: {
+                heap.mostrarInformacionBloques();
+                break;
+            }
+
+            case 4: {
                 cout << "Cerrando el programa..." << endl;
                 continuar = false;
                 break;
             }
-
             default: {
                 cout << "Opción no válida. Por favor, intente de nuevo." << endl;
                 break;
